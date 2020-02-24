@@ -42,8 +42,8 @@ fun! vimctl#getResource(res='pods') abort
   redraw!
 
   if v:shell_error !=# 0
+    echohl WarningMsg | echo 'Error: ' . join(s:resources) | echohl None
     let s:resources = []
-    echohl WarningMsg | echo join(s:resources) | echohl None
     return
   endif
 
