@@ -22,7 +22,11 @@ let s:currentResourceManifest = []
 
 fun! s:applyManifest() abort
   silent let return = systemlist(g:vimctl_command . ' apply -f -', s:currentResourceManifest)
-  echom join(l:return)
+  if v:shell_error ==# 0
+    echom join(l:return)
+  else
+    echohl WarningMsg | echom 'Error: ' . join(l:return) | echohl None
+  endif
 endfun
 
 
