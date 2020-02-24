@@ -1,3 +1,8 @@
+if !exists('g:vimctl_command')
+  let g:vimctl_command = 'kubectl'
+endif
+
+
 fun! s:loadViewBuffer() abort
   let existing = bufwinnr('__KUBERNETES__')
 
@@ -23,7 +28,7 @@ endfun
 
 fun! s:editResource(pos) abort
   let resourceName = s:resources[a:pos - 1]
-  let manifest = system('kubectl get ' . l:resourceName . ' -o yaml')
+  let manifest = system(g:vimctl_command . ' get ' . l:resourceName . ' -o yaml')
   call <SID>loadEditBuffer(l:resourceName)
   let failed = append(0, split(l:manifest, "\n"))
   silent! normal! ddgg
@@ -33,10 +38,11 @@ endfun
 let s:resources = []
 fun! vimctl#getResource(res='pods') abort
   echo 'Fetching resources... (Ctrl-C to cancel)'
-  silent let s:resources = systemlist('kubectl get ' . a:res . ' -o name')
+  silent let s:resources = systemlist(g:vimctl_command . ' get ' . a:res . ' -o name')
+  redraw!
 
   if v:shell_error !=# 0
-    s:resources = []
+    let s:resources = []
     echohl WarningMsg | echo join(s:resources) | echohl None
     return
   endif
@@ -44,7 +50,6 @@ fun! vimctl#getResource(res='pods') abort
   call <SID>loadViewBuffer()
   let failed = append(0, s:resources)
   silent! normal! ddgg
-  redraw!
 endfun
 
 
