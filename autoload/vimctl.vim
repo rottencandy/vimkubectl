@@ -18,20 +18,32 @@ fun! s:loadViewBuffer() abort
 endfun
 
 
-fun! s:loadEditBuffer(resourceName) abort
+let s:currentResourceManifest = []
+
+fun! s:applyManifest() abort
+  silent let return = systemlist(g:vimctl_command . ' apply -f -', s:currentResourceManifest)
+  echom join(l:return)
+endfun
+
+
+fun! s:loadEditBuffer(resourceName, resourceManifest) abort
   silent! execute 'edit __' . a:resourceName
   setlocal buftype=nofile
   setlocal bufhidden=wipe
   setlocal ft=yaml
+  let s:currentResourceManifest = a:resourceManifest
+
+  let failed = append(0, split(a:resourceManifest, "\n"))
+  silent! normal! ddgg
+  command! -buffer -bar -bang -nargs=0 KApply :call <SID>applyManifest()
+  cnoreabbrev <buffer> w KApply
 endfun
 
 
 fun! s:editResource(pos) abort
   let resourceName = s:resources[a:pos - 1]
   let manifest = system(g:vimctl_command . ' get ' . l:resourceName . ' -o yaml')
-  call <SID>loadEditBuffer(l:resourceName)
-  let failed = append(0, split(l:manifest, "\n"))
-  silent! normal! ddgg
+  call <SID>loadEditBuffer(l:resourceName, l:manifest)
 endfun
 
 
