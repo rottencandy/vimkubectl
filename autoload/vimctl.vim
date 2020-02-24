@@ -21,8 +21,10 @@ endfun
 let s:currentResourceManifest = []
 
 fun! s:applyManifest() abort
+  echo 'Applying resource...'
   silent let return = systemlist(g:vimctl_command . ' apply -f -', s:currentResourceManifest)
   if v:shell_error ==# 0
+    setlocal nomodified
     echom join(l:return)
   else
     echohl WarningMsg | echom 'Error: ' . join(l:return) | echohl None
@@ -32,15 +34,15 @@ endfun
 
 fun! s:loadEditBuffer(resourceName, resourceManifest) abort
   silent! execute 'edit __' . a:resourceName
-  setlocal buftype=nofile
+  setlocal buftype=acwrite
   setlocal bufhidden=wipe
   setlocal ft=yaml
+  autocmd BufWriteCmd <buffer> call <SID>applyManifest()
   let s:currentResourceManifest = a:resourceManifest
 
   let failed = append(0, split(a:resourceManifest, "\n"))
   silent! normal! ddgg
-  command! -buffer -bar -bang -nargs=0 KApply :call <SID>applyManifest()
-  cnoreabbrev <buffer> w KApply
+  setlocal nomodified
 endfun
 
 
@@ -58,7 +60,7 @@ fun! vimctl#getResource(res='pods') abort
   redraw!
 
   if v:shell_error !=# 0
-    echohl WarningMsg | echo 'Error: ' . join(s:resources) | echohl None
+    echohl WarningMsg | echom 'Error: ' . join(s:resources) | echohl None
     let s:resources = []
     return
   endif
