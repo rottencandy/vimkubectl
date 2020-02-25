@@ -89,10 +89,10 @@ endfun
 
 
 fun! vimctl#completionList(A, L, P)
-  let availableResources = systemlist(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get 2>/dev/null')
+  let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get')
   if v:shell_error ==# 0
     return availableResources
-  return []
+  return ''
 endfun
 
 " vim: set ts et sw=2
