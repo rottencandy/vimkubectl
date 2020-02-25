@@ -1,7 +1,7 @@
 Vimctl
 ======
 
-View, edit and control Kubernetes resources from Vim.
+Manage Kubernetes resources from Vim.
 
 
 Installation
