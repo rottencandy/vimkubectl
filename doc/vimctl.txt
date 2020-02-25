@@ -1,0 +1,36 @@
+*vimctl.txt*	Manage Kubernetes resources from Vim
+
+INTRODUCTION                                    *vimctl*
+
+This plugin defines a set of commands and mappings for viewing, editing and
+managing Kubernetes resources.
+
+This plugin assumes that the user is logged in to the Kubernetes cluster using
+`kubectl` or a similar command.
+
+COMMANDS                                        *vimctl-commands*
+
+:KGet {resource}                                *:KGet*
+			Open a split that displays a list of all resources that
+			match {resource}. If {resource} is not given, pod is
+			used.
+
+MAPPINGS                                        *vimctl-mapping*
+
+These mappings can be used on the split buffers created by |:KGet|.
+
+i                                               *vimctl_i*
+			Edit the manifest(in yaml) of the resource under the
+			cursor.
+
+CONFIGURATION                                   *vimctl-configuration*
+
+                                                *g:vimctl_command*
+Vimctl uses the `kubectl` command for communicating with the cluster. Use the
+`g:vimctl_command` variable to specify a different command.
+For example, to use OpenShift's `oc` command: >
+
+    let g:vimctl_command = 'oc'
+<
+
+vim:ft=help:tw=78:noet:norl:
