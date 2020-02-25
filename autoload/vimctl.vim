@@ -2,28 +2,21 @@ if !exists('g:vimctl_command')
   let g:vimctl_command = 'kubectl'
 endif
 
+
 " Edit mode functions
 " ------------------------------------------------------------------------
-
-fun! s:getManifest(resource) abort
-  return systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s')
-endfun
-
 
 let s:currentResourceName = ''
 
 fun! s:applyManifest() abort
   echo 'Applying resource...'
   let manifest = getline('1', '$')
-  silent let return = systemlist(g:vimctl_command . ' apply -f -', l:manifest)
-
+  silent let result = systemlist(g:vimctl_command . ' apply -f -', l:manifest)
   if v:shell_error ==# 0
-    setlocal nomodified
-    let updatedManifest = s:getManifest(s:currentResourceName)
-    echom join(l:return, "\n")
-    call s:fillEditBuffer(l:updatedManifest)
+    echom join(l:result, "\n")
+    call s:updateEditBuffer()
   else
-    echohl WarningMsg | echom 'Error: ' . join(l:return, "\n") | echohl None
+    echohl WarningMsg | echom 'Error: ' . join(l:result, "\n") | echohl None
   endif
 endfun
 
@@ -34,21 +27,50 @@ fun! s:setupEditBuffer() abort
   setlocal bufhidden=wipe
   setlocal ft=yaml
   autocmd BufWriteCmd <buffer> call <SID>applyManifest()
+  nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
 endfun
 
-fun! s:fillEditBuffer(resourceManifest) abort
+fun! s:redrawEditBuffer(resourceManifest) abort
   silent! execute '%d'
   call setline('.', a:resourceManifest)
   setlocal nomodified
 endfun
 
+fun! s:updateEditBuffer() abort
+  let updatedManifest = s:fetchManifest(s:currentResourceName)
+  if v:shell_error ==# 0
+    call s:redrawEditBuffer(updatedManifest)
+  endif
+endfun
 
-fun! s:editResource(pos) abort
-  let s:currentResourceName = s:resourcesList[a:pos - 1]
-  let manifest = s:getManifest(s:currentResourceName)
-  setlocal modifiable
-  call s:setupEditBuffer()
-  call s:fillEditBuffer(l:manifest)
+fun! s:resourceUnderCursor() abort
+  let resource = getline('.')
+  if l:resource
+    return l:resource
+  endif
+  return 0
+endfun
+
+fun! s:fetchManifest(resource) abort
+  let manifest = systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s')
+  if v:shell_error !=# 0
+    echohl WarningMsg | echom 'Error: ' . join(l:manifest, "\n") | echohl None
+    return
+  endif
+  return l:manifest
+endfun
+
+fun! s:editResource() abort
+  let resource = s:getResourceUnderCursor()
+  if resource
+    let manifest = s:fetchManifest(l:resource)
+    if v:shell_error ==# 0
+      let s:currentResourceName = l:resource
+      setlocal modifiable
+      call s:setupEditBuffer()
+      call s:redrawEditBuffer(l:manifest)
+    endif
+  endif
 endfun
 
 " Watch mode functions
@@ -64,7 +86,7 @@ fun! s:setupViewBuffer() abort
     setlocal buftype=nofile
     setlocal bufhidden=wipe
     setlocal ft=kubernetes
-    nnoremap <silent><buffer> i :call <SID>editResource(getpos('.')[1])<CR>
+    nnoremap <silent><buffer> i :call <SID>editResource()<CR>
     nnoremap <silent><buffer> gr :call <SID>updateViewBuffer()<CR>
   else
     silent! execute l:existing . 'wincmd w'

@@ -17,14 +17,20 @@ COMMANDS                                        *vimctl-commands*
 
 MAPPINGS                                        *vimctl-mapping*
 
-These mappings can be used on the split buffers created by |:KGet|.
+These mappings can be used on the split buffers created by |:KGet| or the
+manifest buffers when editing a resource.
 
 i                                               *vimctl_i*
 			Edit the manifest(in yaml) of the resource under the
 			cursor.
 
 gr                                              *vimctl_gr*
-			Re-fetch/update the list of resources.
+			When used in the resource view buffer:
+			Refresh/update the list of resources.
+
+			When used in the manifest edit buffer:
+			Update the currently editing manifest.
+			(NOTE: This will disregard any unsaved changes)
 
 CONFIGURATION                                   *vimctl-configuration*
 
