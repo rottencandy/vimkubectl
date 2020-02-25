@@ -89,7 +89,9 @@ endfun
 
 
 fun! vimctl#completionList(A, L, P)
-  " TODO: Get resource list
+  let availableResources = systemlist(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get 2>/dev/null')
+  if v:shell_error ==# 0
+    return availableResources
   return []
 endfun
 
