@@ -28,9 +28,9 @@ CONFIGURATION                                   *vimctl-configuration*
                                                 *g:vimctl_command*
 Vimctl uses the `kubectl` command for communicating with the cluster. Use the
 `g:vimctl_command` variable to specify a different command.
-For example, to use OpenShift's `oc` command: >
-
+For example, to use OpenShift's `oc` command:
+>
     let g:vimctl_command = 'oc'
 <
 
-vim:ft=help:tw=78:noet:norl:
+vim: ft=help:tw=78:noet:norl:

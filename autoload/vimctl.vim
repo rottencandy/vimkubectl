@@ -4,7 +4,7 @@ endif
 
 
 fun! s:getManifest(resource) abort
-  return systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml')
+  return systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s')
 endfun
 
 
@@ -19,7 +19,7 @@ fun! s:applyManifest() abort
     setlocal nomodified
     let updatedManifest = s:getManifest(s:currentResourceName)
     echom join(l:return, "\n")
-  call s:fillEditBuffer(l:updatedManifest)
+    call s:fillEditBuffer(l:updatedManifest)
   else
     echohl WarningMsg | echom 'Error: ' . join(l:return, "\n") | echohl None
   endif
@@ -35,7 +35,7 @@ fun! s:setupEditBuffer() abort
 endfun
 
 fun! s:fillEditBuffer(resourceManifest) abort
-  silent! normal ggdG
+  silent! execute '%d'
   call setline('.', a:resourceManifest)
   setlocal nomodified
 endfun
@@ -49,6 +49,8 @@ fun! s:editResource(pos) abort
   call s:fillEditBuffer(l:manifest)
 endfun
 
+" Watch mode functions
+" ------------------------------------------------------------------------
 
 fun! s:setupViewBuffer() abort
   let existing = bufwinnr('__KUBERNETES__')
@@ -63,7 +65,7 @@ fun! s:setupViewBuffer() abort
 endfun
 
 fun! s:fillViewBuffer() abort
-  silent! normal! ggdG
+  silent! execute '%d'
   call setline('.', s:viewResourcesList)
   setlocal nomodifiable
   nnoremap <silent><buffer> i :call <SID>editResource(getpos('.')[1])<CR>
@@ -74,7 +76,7 @@ let s:viewResourcesList = []
 
 fun! vimctl#getResource(res='pods') abort
   echo 'Fetching resources... (Ctrl-C to cancel)'
-  silent let s:viewResourcesList = systemlist(g:vimctl_command . ' get ' . a:res . ' -o name')
+  silent let s:viewResourcesList = systemlist(g:vimctl_command . ' get ' . a:res . ' -o name --request-timeout=5s')
   redraw!
 
   if v:shell_error !=# 0
@@ -90,9 +92,10 @@ endfun
 
 fun! vimctl#completionList(A, L, P)
   let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get')
-  if v:shell_error ==# 0
+  if v:shell_error !=# 0
+    return ''
+  endif
     return availableResources
-  return ''
 endfun
 
-" vim: set ts et sw=2
+" vim: ts:et:sw=2:sts=2:
