@@ -3,21 +3,31 @@ if !exists('g:vimctl_command')
 endif
 
 
+fun! s:getManifest(resource) abort
+  return systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml')
+endfun
+
+
+let s:currentResourceName = ''
+
 fun! s:applyManifest() abort
   echo 'Applying resource...'
   let manifest = getline('1', '$')
   silent let return = systemlist(g:vimctl_command . ' apply -f -', l:manifest)
+
   if v:shell_error ==# 0
-    echom join(l:return)
     setlocal nomodified
+    let updatedManifest = s:getManifest(s:currentResourceName)
+    echom join(l:return, "\n")
+  call s:fillEditBuffer(l:updatedManifest)
   else
-    echohl WarningMsg | echom 'Error: ' . join(l:return) | echohl None
+    echohl WarningMsg | echom 'Error: ' . join(l:return, "\n") | echohl None
   endif
 endfun
 
 
-fun! s:setupEditBuffer(resourceName) abort
-  silent! execute 'edit __' . a:resourceName
+fun! s:setupEditBuffer() abort
+  silent! execute 'edit __' . s:currentResourceName
   setlocal buftype=acwrite
   setlocal bufhidden=wipe
   setlocal ft=yaml
@@ -32,10 +42,10 @@ endfun
 
 
 fun! s:editResource(pos) abort
-  let resourceName = s:view_resources[a:pos - 1]
-  let manifest = systemlist(g:vimctl_command . ' get ' . l:resourceName . ' -o yaml')
+  let s:currentResourceName = s:viewResourcesList[a:pos - 1]
+  let manifest = s:getManifest(s:currentResourceName)
   setlocal modifiable
-  call s:setupEditBuffer(l:resourceName)
+  call s:setupEditBuffer()
   call s:fillEditBuffer(l:manifest)
 endfun
 
@@ -54,22 +64,22 @@ endfun
 
 fun! s:fillViewBuffer() abort
   silent! normal! ggdG
-  call setline('.', s:view_resources)
+  call setline('.', s:viewResourcesList)
   setlocal nomodifiable
   nnoremap <silent><buffer> i :call <SID>editResource(getpos('.')[1])<CR>
 endfun
 
 
-let s:view_resources = []
+let s:viewResourcesList = []
 
 fun! vimctl#getResource(res='pods') abort
   echo 'Fetching resources... (Ctrl-C to cancel)'
-  silent let s:view_resources = systemlist(g:vimctl_command . ' get ' . a:res . ' -o name')
+  silent let s:viewResourcesList = systemlist(g:vimctl_command . ' get ' . a:res . ' -o name')
   redraw!
 
   if v:shell_error !=# 0
-    echohl WarningMsg | echom 'Error: ' . join(s:view_resources) | echohl None
-    let s:view_resources = []
+    echohl WarningMsg | echom 'Error: ' . join(s:viewResourcesList, "\n") | echohl None
+    let s:viewResourcesList = []
     return
   endif
 
