@@ -19,6 +19,7 @@ Use your favourite plugin manager
   cd ~/.vim/pack/local/start
   git clone github.com/rottencandy/vimctl.git
   ```
+  Help tag files can be generated with `:helptags ALL`.
 
 
 Usage
