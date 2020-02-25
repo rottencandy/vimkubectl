@@ -2,6 +2,8 @@ if !exists('g:vimctl_command')
   let g:vimctl_command = 'kubectl'
 endif
 
+" Edit mode functions
+" ------------------------------------------------------------------------
 
 fun! s:getManifest(resource) abort
   return systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s')
@@ -42,7 +44,7 @@ endfun
 
 
 fun! s:editResource(pos) abort
-  let s:currentResourceName = s:viewResourcesList[a:pos - 1]
+  let s:currentResourceName = s:resourcesList[a:pos - 1]
   let manifest = s:getManifest(s:currentResourceName)
   setlocal modifiable
   call s:setupEditBuffer()
@@ -52,6 +54,9 @@ endfun
 " Watch mode functions
 " ------------------------------------------------------------------------
 
+let s:currentResource = ''
+let s:resourcesList = []
+
 fun! s:setupViewBuffer() abort
   let existing = bufwinnr('__KUBERNETES__')
   if l:existing ==# -1
@@ -59,34 +64,47 @@ fun! s:setupViewBuffer() abort
     setlocal buftype=nofile
     setlocal bufhidden=wipe
     setlocal ft=kubernetes
+    nnoremap <silent><buffer> i :call <SID>editResource(getpos('.')[1])<CR>
+    nnoremap <silent><buffer> gr :call <SID>updateViewBuffer()<CR>
   else
     silent! execute l:existing . 'wincmd w'
   endif
 endfun
 
-fun! s:fillViewBuffer() abort
+fun! s:redrawViewBuffer() abort
+  setlocal modifiable
   silent! execute '%d'
-  call setline('.', s:viewResourcesList)
+  call setline('.', s:resourcesList)
   setlocal nomodifiable
-  nnoremap <silent><buffer> i :call <SID>editResource(getpos('.')[1])<CR>
+endfun
+
+fun! s:updateResourcesList() abort
+  echo 'Fetching resources...'
+  silent let newResources = systemlist(g:vimctl_command . ' get ' . s:currentResource . ' -o name --request-timeout=5s')
+  redraw!
+  if v:shell_error != 0
+    echohl WarningMsg | echom 'Error: ' . join(l:newResources, "\n") | echohl None
+    return
+  endif
+  let s:resourcesList = l:newResources
+endfun
+
+fun! s:updateViewBuffer() abort
+  call s:updateResourcesList()
+  if v:shell_error ==# 0
+    call s:redrawViewBuffer()
+  endif
 endfun
 
 
-let s:viewResourcesList = []
-
 fun! vimctl#getResource(res='pods') abort
-  echo 'Fetching resources... (Ctrl-C to cancel)'
-  silent let s:viewResourcesList = systemlist(g:vimctl_command . ' get ' . a:res . ' -o name --request-timeout=5s')
-  redraw!
-
+  let s:currentResource = a:res
+  call s:updateResourcesList()
   if v:shell_error !=# 0
-    echohl WarningMsg | echom 'Error: ' . join(s:viewResourcesList, "\n") | echohl None
-    let s:viewResourcesList = []
     return
   endif
-
   call s:setupViewBuffer()
-  call s:fillViewBuffer()
+  call s:redrawViewBuffer()
 endfun
 
 
@@ -95,7 +113,7 @@ fun! vimctl#completionList(A, L, P)
   if v:shell_error !=# 0
     return ''
   endif
-    return availableResources
+  return availableResources
 endfun
 
 " vim: ts:et:sw=2:sts=2:

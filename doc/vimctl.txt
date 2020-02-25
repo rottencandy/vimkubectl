@@ -23,6 +23,9 @@ i                                               *vimctl_i*
 			Edit the manifest(in yaml) of the resource under the
 			cursor.
 
+gr                                              *vimctl_gr*
+			Re-fetch/update the list of resources.
+
 CONFIGURATION                                   *vimctl-configuration*
 
                                                 *g:vimctl_command*
