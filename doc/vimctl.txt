@@ -21,8 +21,12 @@ These mappings can be used on the split buffers created by |:KGet| or the
 manifest buffers when editing a resource.
 
 i                                               *vimctl_i*
-			Edit the manifest(in yaml) of the resource under the
-			cursor.
+			Open the resource under the cursor for editing,
+			defaults to YAML format.
+
+dd                                              *vimctl_i*
+			Delete the resource under the cursor.
+			(Prompts for confirmation)
 
 gr                                              *vimctl_gr*
 			When used in the resource view buffer:
@@ -30,7 +34,7 @@ gr                                              *vimctl_gr*
 
 			When used in the manifest edit buffer:
 			Update the currently editing manifest.
-			(NOTE: This will disregard any unsaved changes)
+			(NOTE: This will disregard any local unsaved changes)
 
 CONFIGURATION                                   *vimctl-configuration*
 

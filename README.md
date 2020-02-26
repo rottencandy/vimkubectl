@@ -27,10 +27,12 @@ Make sure you are logged in to your cluster using `kubectl` or a similar tool.
 
 - `:KGet {resource_type}`
 
-  Get a list of all resources that match `{resource_type}`. If `{resource_type}` is not given, `pod` is assumed.
+  Get a list of all resources that match `{resource_type}`. If `{resource_type}` is not given, `pod` is used.
 
   You can also use `<Tab>` to cycle through possible resource types.
 
 - `gr` to refresh/update the list of resources.
 
 - `i` to edit resource under cursor.
+
+- `dd` to delete resource under cursor.
