@@ -20,20 +20,20 @@ MAPPINGS                                        *vimctl-mapping*
 These mappings can be used on the split buffers created by |:KGet| or the
 manifest buffers when editing a resource.
 
-ii                                              *vimctl_i*
+ii                                              *vimctl_ii*
 			Open the resource under the cursor for editing,
 			defaults to YAML format.
 
-is                                              *vimctl_i*
+is                                              *vimctl_is*
 			Open the resource in a new split.
 
-iv                                              *vimctl_i*
+iv                                              *vimctl_iv*
 			Open the resource in a new vertical split.
 
-it                                              *vimctl_i*
+it                                              *vimctl_it*
 			Open the resource in a new tab.
 
-dd                                              *vimctl_i*
+dd                                              *vimctl_id*
 			Delete the resource under the cursor.
 			(Prompts for confirmation)
 
