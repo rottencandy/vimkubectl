@@ -44,6 +44,15 @@ fun! s:applyManifest() abort
   endif
 endfun
 
+fun! s:saveToFile(name='') abort
+  let fileName = a:name
+  if a:name ==# ''
+    let l:fileName = substitute(s:currentResourceName, '/', '_', '') . '.yaml'
+  endif
+  let manifest = getline('1', '$')
+  call writefile(l:manifest, l:fileName)
+  echom 'Saved to ' . l:fileName
+endfun
 
 fun! s:setupEditBuffer(bufType) abort
   silent! execute a:bufType . ' __' . s:currentResourceName
@@ -52,6 +61,7 @@ fun! s:setupEditBuffer(bufType) abort
   setlocal ft=yaml
   autocmd BufWriteCmd <buffer> call <SID>applyManifest()
   nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
+  command -buffer -bar -bang -nargs=? KSave :call <SID>saveToFile(<f-args>)
 endfun
 
 fun! s:redrawEditBuffer(resourceManifest) abort

@@ -44,6 +44,8 @@ Use `g:vimctl_command` to specify the command to use. (default: `kubectl`)
 
   - `dd` to delete the resource under cursor.
 
+  - `:KSave {filename}` to save the manifest to a file. If `{filename}` is not given, the resource name is used.
+
 - The manifest can be edited just like a regular file, except that it gets applied on every save.
 
   The following mappings are available in this buffer:

@@ -15,6 +15,12 @@ COMMANDS                                        *vimctl-commands*
 			match {resource}. If {resource} is not given, pod is
 			used.
 
+:KSave {filename}                               *:KSave*
+			Save the currently open manifest to a file.
+			If {filename} is not given, the resource name is used.
+			(NOTE: This command is only available when viewing
+			resource manifests)
+
 MAPPINGS                                        *vimctl-mapping*
 
 These mappings can be used on the split buffers created by |:KGet| or the
