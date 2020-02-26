@@ -55,4 +55,9 @@ For example, to use OpenShift's `oc` command:
     let g:vimctl_command = 'oc'
 <
 
+LICENSE                                         *vimctl-license*
+
+MIT
+
+------------------------------------------------------------------------------
 vim: ft=help:tw=78:noet:norl:
