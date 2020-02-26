@@ -34,7 +34,7 @@ Use `g:vimctl_command` to specify the command to use. (default: `kubectl`)
 
   - `gr` to refresh/update the list of resources.
 
-  - `ii` to open and edit the manifest of the resource under cursor, in the current window(opens in `YAML` format)
+  - `ii` (think, "insert mode") to open and edit the manifest of the resource under cursor, in the current window(opens in `YAML` format)
 
   - `is` to open in a split.
 
@@ -42,12 +42,17 @@ Use `g:vimctl_command` to specify the command to use. (default: `kubectl`)
 
   - `it` to open in a new tab.
 
-  - `dd` to delete the resource under cursor.
-
-  - `:KSave {filename}` to save the manifest to a file. If `{filename}` is not given, the resource name is used.
+  - `dd` to delete the resource under cursor. (Prompts for confirmation)
 
 - The manifest can be edited just like a regular file, except that it gets applied on every save.
 
   The following mappings are available in this buffer:
 
   - `gr` to refresh/update the manifest. Note that this will disregard any unsaved local changes.
+
+  - `:KSave {filename}` to save the manifest to a file. If `{filename}` is not given, the resource name is used.
+
+License
+-------
+
+MIT
