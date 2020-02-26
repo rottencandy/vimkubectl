@@ -7,15 +7,16 @@ Manage Kubernetes resources from Vim.
 Installation
 ------------
 
-Use your favourite plugin manager
+Use your favourite plugin manager.
 
-- As a Vim8 plugin
-  ```sh
-  mkdir -p ~/.vim/pack/local/start
-  cd ~/.vim/pack/local/start
-  git clone github.com/rottencandy/vimctl.git
-  ```
-  Help tag files can be generated with `:helptags ALL`.
+Or use Vim8's built-in package support:
+```sh
+mkdir -p ~/.vim/pack/local/start
+cd ~/.vim/pack/local/start
+git clone github.com/rottencandy/vimctl.git
+```
+
+Help tag files can be generated with `:helptags ALL`.
 
 
 Usage
@@ -43,6 +44,8 @@ Use `g:vimctl_command` to specify the command to use. (default: `kubectl`)
 
   - `dd` to delete the resource under cursor.
 
-- The manifest can be edited just like a regular file, except that it gets applied on every save. The following mappings are available in this buffer:
+- The manifest can be edited just like a regular file, except that it gets applied on every save.
 
-  - `gr` to refresh/update the manifest. NOTE: This will disregard any unsaved local changes.
+  The following mappings are available in this buffer:
+
+  - `gr` to refresh/update the manifest. Note that this will disregard any unsaved local changes.
