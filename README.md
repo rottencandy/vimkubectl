@@ -31,4 +31,6 @@ Make sure you are logged in to your cluster using `kubectl` or a similar tool.
 
   You can also use `<Tab>` to cycle through possible resource types.
 
+- `gr` to refresh/update the list of resources.
+
 - `i` to edit resource under cursor.

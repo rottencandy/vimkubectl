@@ -73,6 +73,22 @@ fun! s:editResource() abort
   endif
 endfun
 
+fun! s:deleteResource() abort
+  let resource = s:resourceUnderCursor()
+  if len(l:resource)
+    let choice = confirm('Are you sure you want to delete ' . l:resource . ' ?', "&Yes\n&No")
+    if l:choice ==# 1
+      let result = systemlist(g:vimctl_command . ' delete ' . l:resource)
+      if v:shell_error !=# 0
+        echohl WarningMsg | echom 'Error: ' . join(l:result, "\n") | echohl None
+      else
+        call s:updateViewBuffer()
+        echom join(l:result, "\n")
+      endif
+    endif
+  endif
+endfun
+
 " Watch mode functions
 " ------------------------------------------------------------------------
 
@@ -87,6 +103,7 @@ fun! s:setupViewBuffer() abort
     setlocal bufhidden=wipe
     setlocal ft=kubernetes
     nnoremap <silent><buffer> i :call <SID>editResource()<CR>
+    nnoremap <silent><buffer> dd :call <SID>deleteResource()<CR>
     nnoremap <silent><buffer> gr :call <SID>updateViewBuffer()<CR>
   else
     silent! execute l:existing . 'wincmd w'
@@ -131,7 +148,7 @@ endfun
 
 
 fun! vimctl#completionList(A, L, P)
-  let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get | awk -F "." "{print $1}"')
+  let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get | awk -F "." ''{print $1}''')
   if v:shell_error !=# 0
     return ''
   endif
