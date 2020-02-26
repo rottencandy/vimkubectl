@@ -9,10 +9,6 @@ Installation
 
 Use your favourite plugin manager
 
-- Using [vim-plug](https://github.com/junegunn/vim-plug)
-  1. Add `Plug 'rottencandy/vimctl'` to your `vimrc`
-  2. Run `:PlugInstall`
-
 - As a Vim8 plugin
   ```sh
   mkdir -p ~/.vim/pack/local/start

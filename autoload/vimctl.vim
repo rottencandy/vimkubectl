@@ -131,7 +131,7 @@ endfun
 
 
 fun! vimctl#completionList(A, L, P)
-  let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get')
+  let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get | awk -F "." "{print $1}"')
   if v:shell_error !=# 0
     return ''
   endif
