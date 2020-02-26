@@ -45,10 +45,10 @@ endfun
 
 fun! s:resourceUnderCursor() abort
   let resource = getline('.')
-  if l:resource
+  if len(l:resource)
     return l:resource
   endif
-  return 0
+  return ''
 endfun
 
 fun! s:fetchManifest(resource) abort
@@ -61,8 +61,8 @@ fun! s:fetchManifest(resource) abort
 endfun
 
 fun! s:editResource() abort
-  let resource = s:getResourceUnderCursor()
-  if resource
+  let resource = s:resourceUnderCursor()
+  if len(l:resource)
     let manifest = s:fetchManifest(l:resource)
     if v:shell_error ==# 0
       let s:currentResourceName = l:resource
