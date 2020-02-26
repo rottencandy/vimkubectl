@@ -21,9 +21,9 @@ Use your favourite plugin manager
 Usage
 -----
 
-Make sure you are logged in to your cluster using `kubectl` or a similar tool.
+Make sure you are logged in to your cluster using `kubectl` or a similar command.
 
-- Use `g:vimctl_command` to specify the tool to use. (default: `kubectl`)
+Use `g:vimctl_command` to specify the command to use. (default: `kubectl`)
 
 - `:KGet {resource_type}`
 
@@ -31,8 +31,18 @@ Make sure you are logged in to your cluster using `kubectl` or a similar tool.
 
   You can also use `<Tab>` to cycle through possible resource types.
 
-- `gr` to refresh/update the list of resources.
+  - `gr` to refresh/update the list of resources.
 
-- `i` to edit resource under cursor.
+  - `ii` to open and edit the manifest of the resource under cursor, in the current window(opens in `YAML` format)
 
-- `dd` to delete resource under cursor.
+  - `is` to open in a split.
+
+  - `iv` to open in a vertical split..
+
+  - `it` to open in a new tab.
+
+  - `dd` to delete the resource under cursor.
+
+- The manifest can be edited just like a regular file, except that it gets applied on every save. The following mappings are available in this buffer:
+
+  - `gr` to refresh/update the manifest. NOTE: This will disregard any unsaved local changes.

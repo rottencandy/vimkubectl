@@ -21,8 +21,8 @@ fun! s:applyManifest() abort
 endfun
 
 
-fun! s:setupEditBuffer() abort
-  silent! execute 'edit __' . s:currentResourceName
+fun! s:setupEditBuffer(bufType) abort
+  silent! execute a:bufType . ' __' . s:currentResourceName
   setlocal buftype=acwrite
   setlocal bufhidden=wipe
   setlocal ft=yaml
@@ -60,14 +60,14 @@ fun! s:fetchManifest(resource) abort
   return l:manifest
 endfun
 
-fun! s:editResource() abort
+fun! s:editResource(openAs='edit') abort
   let resource = s:resourceUnderCursor()
   if len(l:resource)
     let manifest = s:fetchManifest(l:resource)
     if v:shell_error ==# 0
       let s:currentResourceName = l:resource
       setlocal modifiable
-      call s:setupEditBuffer()
+      call s:setupEditBuffer(a:openAs)
       call s:redrawEditBuffer(l:manifest)
     endif
   endif
@@ -102,7 +102,10 @@ fun! s:setupViewBuffer() abort
     setlocal buftype=nofile
     setlocal bufhidden=wipe
     setlocal ft=kubernetes
-    nnoremap <silent><buffer> i :call <SID>editResource()<CR>
+    nnoremap <silent><buffer> ii :call <SID>editResource()<CR>
+    nnoremap <silent><buffer> is :call <SID>editResource('sp')<CR>
+    nnoremap <silent><buffer> iv :call <SID>editResource('vs')<CR>
+    nnoremap <silent><buffer> it :call <SID>editResource('tabe')<CR>
     nnoremap <silent><buffer> dd :call <SID>deleteResource()<CR>
     nnoremap <silent><buffer> gr :call <SID>updateViewBuffer()<CR>
   else
