@@ -35,7 +35,7 @@ let s:currentResourceName = ''
 fun! s:applyManifest() abort
   echo 'Applying resource...'
   let manifest = getline('1', '$')
-  silent let result = systemlist(g:vimctl_command . ' apply -f -', l:manifest)
+  silent let result = systemlist(g:vimctl_command . ' apply -n ' . s:currentNamespce . ' -f -', l:manifest)
   if v:shell_error ==# 0
     echom join(l:result, "\n")
     call s:updateEditBuffer()
@@ -87,7 +87,7 @@ fun! s:resourceUnderCursor() abort
 endfun
 
 fun! s:fetchManifest(resource) abort
-  let manifest = systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s')
+  let manifest = systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s -n ' . s:currentNamespace)
   if v:shell_error !=# 0
     echohl WarningMsg | echom 'Error: ' . join(l:manifest, "\n") | echohl None
     return
@@ -113,7 +113,7 @@ fun! s:deleteResource() abort
   if len(l:resource)
     let choice = confirm('Are you sure you want to delete ' . l:resource . ' ?', "&Yes\n&No")
     if l:choice ==# 1
-      let result = systemlist(g:vimctl_command . ' delete ' . l:resource)
+      let result = systemlist(g:vimctl_command . ' delete ' . l:resource . ' -n ' . s:currentNamespace)
       if v:shell_error !=# 0
         echohl WarningMsg | echom 'Error: ' . join(l:result, "\n") | echohl None
       else
@@ -157,7 +157,7 @@ endfun
 
 fun! s:updateResourcesList() abort
   echo 'Fetching resources...'
-  silent let newResources = systemlist(g:vimctl_command . ' get ' . s:currentResource . ' -o name --request-timeout=5s')
+  silent let newResources = systemlist(g:vimctl_command . ' get ' . s:currentResource . ' -o name --request-timeout=5s -n ' . s:currentNamespace)
   redraw!
   if v:shell_error != 0
     echohl WarningMsg | echom 'Error: ' . join(l:newResources, "\n") | echohl None
@@ -175,6 +175,9 @@ endfun
 
 
 fun! vimctl#getResource(res='pods') abort
+  if s:currentNamespace ==# ''
+    call s:fetchCurrentNamespace()
+  endif
   let s:currentResource = a:res
   call s:updateResourcesList()
   if v:shell_error !=# 0
