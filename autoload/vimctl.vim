@@ -74,6 +74,7 @@ fun! s:updateEditBuffer() abort
   let updatedManifest = s:fetchManifest(s:currentResourceName)
   if v:shell_error ==# 0
     call s:redrawEditBuffer(updatedManifest)
+    echom 'Updated manifest'
   endif
 endfun
 
@@ -183,8 +184,40 @@ fun! vimctl#getResource(res='pods') abort
   call s:redrawViewBuffer()
 endfun
 
+let s:currentNamespace = ''
 
-fun! vimctl#completionList(A, L, P)
+fun! s:fetchCurrentNamespace() abort
+  let namespace = system(g:vimctl_command . ' config view --minify -o ''jsonpath={..namespace}'' --request-timeout=5s')
+  if v:shell_error !=# 0
+    echohl WarningMsg | echom 'Error: ' . l:namespace | echohl None
+    return
+  endif
+  let s:currentNamespace = l:namespace
+endfun
+
+fun! vimctl#switchNamespace(name='') abort
+  if a:name ==# ''
+    if s:currentNamespace ==# ''
+      call s:fetchCurrentNamespace()
+    endif
+  else
+    let s:currentNamespace = a:name
+  endif
+  echom 'Using namespace: ' . s:currentNamespace
+endfun
+
+" Custom command completion functions
+" ------------------------------------------------------------------------
+
+fun! vimctl#allNamespaces(A, L, P)
+  let namespaces = system(g:vimctl_command . ' get ns -o name --request-timeout=5s | awk -F "/" ''{print $2}''')
+  if v:shell_error !=# 0
+    return ''
+  endif
+  return l:namespaces
+endfun
+
+fun! vimctl#allResources(A, L, P)
   let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get | awk -F "." ''{print $1}''')
   if v:shell_error !=# 0
     return ''

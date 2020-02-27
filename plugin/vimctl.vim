@@ -20,4 +20,5 @@
 " LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 " OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 " WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
-command -bar -bang -complete=custom,vimctl#completionList -nargs=? KGet :call vimctl#getResource(<f-args>)
+command -bar -bang -complete=custom,vimctl#allResources -nargs=? KGet :call vimctl#getResource(<f-args>)
+command -bar -bang -complete=custom,vimctl#allNamespaces -nargs=? KNamespace :call vimctl#switchNamespace(<f-args>)

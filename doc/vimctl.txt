@@ -21,6 +21,13 @@ COMMANDS                                        *vimctl-commands*
 			(NOTE: This command is only available when viewing
 			resource manifests)
 
+:Knamespace {name}                              *:KNamespace*
+			Switch to {name} as the current namespace.
+			If {name} is not given, prints the currently selected
+			namespace.
+			(NOTE: This option only sets the namespace for |vimctl|
+			commands, and does not set/modify `kubectl config`)
+
 MAPPINGS                                        *vimctl-mapping*
 
 These mappings can be used on the split buffers created by |:KGet| or the

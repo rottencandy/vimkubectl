@@ -52,6 +52,12 @@ Use `g:vimctl_command` to specify the command to use. (default: `kubectl`)
 
   - `:KSave {filename}` to save the manifest to a file. If `{filename}` is not given, the resource name is used.
 
+- `:KNamespace {name}`
+
+  Switch the currently selected namespace to `{name}`. If `{name}` is not given, prints the current namespace.
+
+  `<Tab>` can be used to cycle through available namespaces.
+
 License
 -------
 
