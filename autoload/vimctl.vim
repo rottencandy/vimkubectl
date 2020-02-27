@@ -47,7 +47,7 @@ endfun
 fun! s:saveToFile(name='') abort
   let fileName = a:name
   if a:name ==# ''
-    let l:fileName = substitute(s:currentResourceName, '/', '_', '') . '.yaml'
+    let l:fileName = substitute(s:currentResourceName, '\v\/', '_', '') . '.yaml'
   endif
   let manifest = getline('1', '$')
   call writefile(l:manifest, l:fileName)
