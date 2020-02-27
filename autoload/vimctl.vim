@@ -149,6 +149,7 @@ fun! s:setupViewBuffer() abort
 endfun
 
 fun! s:redrawViewBuffer() abort
+  call s:setupViewBuffer()
   setlocal modifiable
   silent! execute '%d'
   call setline('.', s:resourcesList)
@@ -205,6 +206,9 @@ fun! vimctl#switchNamespace(name='') abort
     endif
   else
     let s:currentNamespace = a:name
+    if bufwinnr('__KUBERNETES__') !=# -1
+      call s:updateViewBuffer()
+    endif
   endif
   echom 'Using namespace: ' . s:currentNamespace
 endfun
