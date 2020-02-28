@@ -1,0 +1,15 @@
+toggleable wide view
+Syntax Highlight, indent resource view
+details: namespace,replicas,state on top
+Refresh(automatic)
+
+pod logs in quickfix
+oc status
+flags: --verbs
+filter view with labels
+
+:KEdit
+validate manifest
+describe
+shortcuts in quick help window
+fold resources display in vew

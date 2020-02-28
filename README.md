@@ -1,4 +1,4 @@
-Vimctl
+Vimkubectl
 ======
 
 Manage Kubernetes resources from Vim.
@@ -13,7 +13,7 @@ Or use Vim8's built-in package support:
 ```sh
 mkdir -p ~/.vim/pack/local/start
 cd ~/.vim/pack/local/start
-git clone github.com/rottencandy/vimctl.git
+git clone github.com/rottencandy/vimkubectl.git
 ```
 
 Help tag files can be generated with `:helptags ALL`.
@@ -24,7 +24,7 @@ Usage
 
 Make sure you are logged in to your cluster using `kubectl` or a similar command.
 
-Use `g:vimctl_command` to specify the command to use. (default: `kubectl`)
+Use `g:vimkubectl_command` to specify the command to use. (default: `kubectl`)
 
 - `:KGet {resource_type}`
 
