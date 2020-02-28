@@ -68,6 +68,14 @@ For example, to use OpenShift's `oc` command:
 >
     let g:vimkubectl_command = 'oc'
 <
+                                                *g:vimkubectl_timeout*
+The `g:vimkubectl_timeout` variable can be used to specify the amount of time
+(in seconds) to wait for responses, before considering the cluster won't
+return. The default timeout limit is `5` seconds.
+For example, to change the wait time to `10` seconds:
+>
+    let g:vimkubectl_timeout = 10
+<
 
 LICENSE                                         *vimkubectl-license*
 
