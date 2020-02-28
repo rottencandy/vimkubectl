@@ -79,9 +79,12 @@ fun! s:updateEditBuffer() abort
 endfun
 
 fun! s:resourceUnderCursor() abort
-  let resource = getline('.')
+  if getpos('.')[1] <=# 3
+    return ''
+  endif
+  let resource = split(getline('.'))
   if len(l:resource)
-    return l:resource
+    return l:resource[0]
   endif
   return ''
 endfun
@@ -152,6 +155,8 @@ fun! s:redrawViewBuffer() abort
   call s:setupViewBuffer()
   setlocal modifiable
   silent! execute '%d'
+  let details = ['Namespace: ' . s:currentNamespace, 'Resource: ' . s:currentResource, '']
+  call append(0, l:details)
   call setline('.', s:resourcesList)
   setlocal nomodifiable
 endfun
