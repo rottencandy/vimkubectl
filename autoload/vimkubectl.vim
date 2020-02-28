@@ -22,8 +22,8 @@
 " WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
 
 
-if !exists('g:vimctl_command')
-  let g:vimctl_command = 'kubectl'
+if !exists('g:vimkubectl_command')
+  let g:vimkubectl_command = 'kubectl'
 endif
 
 
@@ -35,7 +35,7 @@ let s:currentResourceName = ''
 fun! s:applyManifest() abort
   echo 'Applying resource...'
   let manifest = getline('1', '$')
-  silent let result = systemlist(g:vimctl_command . ' apply -n ' . s:currentNamespce . ' -f -', l:manifest)
+  silent let result = systemlist(g:vimkubectl_command . ' apply -n ' . s:currentNamespace . ' -f -', l:manifest)
   if v:shell_error ==# 0
     echom join(l:result, "\n")
     call s:updateEditBuffer()
@@ -90,7 +90,7 @@ fun! s:resourceUnderCursor() abort
 endfun
 
 fun! s:fetchManifest(resource) abort
-  let manifest = systemlist(g:vimctl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s -n ' . s:currentNamespace)
+  let manifest = systemlist(g:vimkubectl_command . ' get ' . a:resource . ' -o yaml --request-timeout=5s -n ' . s:currentNamespace)
   if v:shell_error !=# 0
     echohl WarningMsg | echom 'Error: ' . join(l:manifest, "\n") | echohl None
     return
@@ -116,7 +116,7 @@ fun! s:deleteResource() abort
   if len(l:resource)
     let choice = confirm('Are you sure you want to delete ' . l:resource . ' ?', "&Yes\n&No")
     if l:choice ==# 1
-      let result = systemlist(g:vimctl_command . ' delete ' . l:resource . ' -n ' . s:currentNamespace)
+      let result = systemlist(g:vimkubectl_command . ' delete ' . l:resource . ' -n ' . s:currentNamespace)
       if v:shell_error !=# 0
         echohl WarningMsg | echom 'Error: ' . join(l:result, "\n") | echohl None
       else
@@ -163,7 +163,7 @@ endfun
 
 fun! s:updateResourcesList() abort
   echo 'Fetching resources...'
-  silent let newResources = systemlist(g:vimctl_command . ' get ' . s:currentResource . ' -o name --request-timeout=5s -n ' . s:currentNamespace)
+  silent let newResources = systemlist(g:vimkubectl_command . ' get ' . s:currentResource . ' -o name --request-timeout=5s -n ' . s:currentNamespace)
   redraw!
   if v:shell_error != 0
     echohl WarningMsg | echom 'Error: ' . join(l:newResources, "\n") | echohl None
@@ -180,7 +180,7 @@ fun! s:updateViewBuffer() abort
 endfun
 
 
-fun! vimctl#getResource(res) abort
+fun! vimkubectl#getResource(res) abort
   if s:currentNamespace ==# ''
     call s:fetchCurrentNamespace()
   endif
@@ -196,7 +196,7 @@ endfun
 let s:currentNamespace = ''
 
 fun! s:fetchCurrentNamespace() abort
-  let namespace = system(g:vimctl_command . ' config view --minify -o ''jsonpath={..namespace}'' --request-timeout=5s')
+  let namespace = system(g:vimkubectl_command . ' config view --minify -o ''jsonpath={..namespace}'' --request-timeout=5s')
   if v:shell_error !=# 0
     echohl WarningMsg | echom 'Error: ' . l:namespace | echohl None
     return
@@ -204,7 +204,7 @@ fun! s:fetchCurrentNamespace() abort
   let s:currentNamespace = l:namespace
 endfun
 
-fun! vimctl#switchNamespace(name) abort
+fun! vimkubectl#switchNamespace(name) abort
   if a:name ==# ''
     if s:currentNamespace ==# ''
       call s:fetchCurrentNamespace()
@@ -221,7 +221,7 @@ endfun
 " Custom command completion functions
 " ------------------------------------------------------------------------
 
-fun! vimctl#allNamespaces(A, L, P)
+fun! vimkubectl#allNamespaces(A, L, P)
   " Command separated to allow clean detection of exit code
   let rawNS = system(g:vimctl_command . ' get ns -o name --request-timeout=5s')
   if v:shell_error !=# 0
@@ -231,8 +231,8 @@ fun! vimctl#allNamespaces(A, L, P)
   return l:namespaces
 endfun
 
-fun! vimctl#allResources(A, L, P)
-  let availableResources = system(g:vimctl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get | awk -F "." ''{print $1}''')
+fun! vimkubectl#allResources(A, L, P)
+  let availableResources = system(g:vimkubectl_command . ' api-resources -o name --cached --request-timeout=5s --verbs=get | awk -F "." ''{print $1}''')
   if v:shell_error !=# 0
     return ''
   endif

@@ -1,6 +1,6 @@
-*vimctl.txt*	Manage Kubernetes resources from Vim
+vimkubectl.txt*	Manage Kubernetes resources from Vim
 
-INTRODUCTION                                    *vimctl*
+INTRODUCTION                                    *vimkubectl*
 
 This plugin defines a set of commands and mappings for viewing, editing and
 managing Kubernetes resources.
@@ -8,7 +8,7 @@ managing Kubernetes resources.
 This plugin assumes that the user is logged in to the Kubernetes cluster using
 `kubectl` or a similar command.
 
-COMMANDS                                        *vimctl-commands*
+COMMANDS                                        *vimkubectl-commands*
 
 :KGet {resource}                                *:KGet*
 			Open a split that displays a list of all resources that
@@ -25,32 +25,33 @@ COMMANDS                                        *vimctl-commands*
 			Switch to {name} as the current namespace.
 			If {name} is not given, prints the currently selected
 			namespace.
-			(NOTE: This option only sets the namespace for |vimctl|
+			(NOTE: This option only sets the namespace for
+			|vimkubectl|
 			commands, and does not set/modify `kubectl config`)
 
-MAPPINGS                                        *vimctl-mapping*
+MAPPINGS                                        *vimkubectl-mapping*
 
 These mappings can be used on the split buffers created by |:KGet| or the
 manifest buffers when editing a resource.
 
-ii                                              *vimctl_ii*
+ii                                              *vimkubectl_ii*
 			Open the resource under the cursor for editing,
 			defaults to YAML format.
 
-is                                              *vimctl_is*
+is                                              *vimkubectl_is*
 			Open the resource in a new split.
 
-iv                                              *vimctl_iv*
+iv                                              *vimkubectl_iv*
 			Open the resource in a new vertical split.
 
-it                                              *vimctl_it*
+it                                              *vimkubectl_it*
 			Open the resource in a new tab.
 
-dd                                              *vimctl_id*
+dd                                              *vimkubectl_id*
 			Delete the resource under the cursor.
 			(Prompts for confirmation)
 
-gr                                              *vimctl_gr*
+gr                                              *vimkubectl_gr*
 			When used in the resource view buffer:
 			Refresh/update the list of resources.
 
@@ -58,17 +59,17 @@ gr                                              *vimctl_gr*
 			Update the currently editing manifest.
 			(NOTE: This will disregard any local unsaved changes)
 
-CONFIGURATION                                   *vimctl-configuration*
+CONFIGURATION                                   *vimkubectl-configuration*
 
-                                                *g:vimctl_command*
-Vimctl uses the `kubectl` command for communicating with the cluster. Use the
-`g:vimctl_command` variable to specify a different command.
+                                                *g:vimkubectl_command*
+Vimkubectl uses the `kubectl` command for communicating with the cluster. Use
+the `g:vimkubectl_command` variable to specify a different command.
 For example, to use OpenShift's `oc` command:
 >
-    let g:vimctl_command = 'oc'
+    let g:vimkubectl_command = 'oc'
 <
 
-LICENSE                                         *vimctl-license*
+LICENSE                                         *vimkubectl-license*
 
 MIT
 
