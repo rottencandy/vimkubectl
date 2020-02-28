@@ -35,7 +35,7 @@ let s:currentResourceName = ''
 fun! s:applyManifest() abort
   echo 'Applying resource...'
   let manifest = getline('1', '$')
-  silent let result = systemlist(g:vimkubectl_command . ' apply -n ' . s:currentNamespce . ' -f -', l:manifest)
+  silent let result = systemlist(g:vimkubectl_command . ' apply -n ' . s:currentNamespace . ' -f -', l:manifest)
   if v:shell_error ==# 0
     echom join(l:result, "\n")
     call s:updateEditBuffer()
