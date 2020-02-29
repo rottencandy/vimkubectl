@@ -44,7 +44,7 @@ fun! s:applyManifest() abort
   endif
 endfun
 
-fun! s:saveToFile(name='') abort
+fun! s:saveToFile(name) abort
   let fileName = a:name
   if a:name ==# ''
     let l:fileName = substitute(s:currentResourceName, '\v\/', '_', '') . '.yaml'
@@ -61,7 +61,7 @@ fun! s:setupEditBuffer(bufType) abort
   setlocal ft=yaml
   autocmd BufWriteCmd <buffer> call <SID>applyManifest()
   nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
-  command -buffer -bar -bang -nargs=? KSave :call <SID>saveToFile(<f-args>)
+  command -buffer -bar -bang -nargs=? KSave :call <SID>saveToFile(<q-args>)
 endfun
 
 fun! s:redrawEditBuffer(resourceManifest) abort
@@ -98,7 +98,7 @@ fun! s:fetchManifest(resource) abort
   return l:manifest
 endfun
 
-fun! s:editResource(openAs='edit') abort
+fun! s:editResource(openAs) abort
   let resource = s:resourceUnderCursor()
   if len(l:resource)
     let manifest = s:fetchManifest(l:resource)
@@ -140,7 +140,7 @@ fun! s:setupViewBuffer() abort
     setlocal buftype=nofile
     setlocal bufhidden=wipe
     setlocal ft=kubernetes
-    nnoremap <silent><buffer> ii :call <SID>editResource()<CR>
+    nnoremap <silent><buffer> ii :call <SID>editResource('edit')<CR>
     nnoremap <silent><buffer> is :call <SID>editResource('sp')<CR>
     nnoremap <silent><buffer> iv :call <SID>editResource('vs')<CR>
     nnoremap <silent><buffer> it :call <SID>editResource('tabe')<CR>
@@ -180,11 +180,11 @@ fun! s:updateViewBuffer() abort
 endfun
 
 
-fun! vimctl#getResource(res='pods') abort
+fun! vimctl#getResource(res) abort
   if s:currentNamespace ==# ''
     call s:fetchCurrentNamespace()
   endif
-  let s:currentResource = a:res
+  let s:currentResource = len(a:res) ? a:res : 'pods'
   call s:updateResourcesList()
   if v:shell_error !=# 0
     return
@@ -204,7 +204,7 @@ fun! s:fetchCurrentNamespace() abort
   let s:currentNamespace = l:namespace
 endfun
 
-fun! vimctl#switchNamespace(name='') abort
+fun! vimctl#switchNamespace(name) abort
   if a:name ==# ''
     if s:currentNamespace ==# ''
       call s:fetchCurrentNamespace()
@@ -222,9 +222,11 @@ endfun
 " ------------------------------------------------------------------------
 
 fun! vimctl#allNamespaces(A, L, P)
-  let namespaces = system(g:vimctl_command . ' get ns -o name --request-timeout=5s | awk -F "/" ''{print $2}''')
+  " Command separated to allow clean detection of exit code
+  let rawNS = system(g:vimctl_command . ' get ns -o name --request-timeout=5s')
   if v:shell_error !=# 0
     return ''
+  let namespaces = system('echo ''' . l:rawNS . ''' | awk -F "/" ''{print $2}''')
   endif
   return l:namespaces
 endfun
