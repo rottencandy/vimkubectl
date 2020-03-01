@@ -1,7 +1,9 @@
 Vimkubectl
 ======
 
-Manage Kubernetes resources from Vim.
+_Manage any Kubernetes resource from Vim._
+
+Vimkubectl is plugin for Vim8.1+ and NeoVim which provides a set of commands and mappings to view and manipulate any valid Kubernetes resource from inside Vim.
 
 
 Installation
@@ -11,26 +13,22 @@ Use your favourite plugin manager.
 
 Or use Vim8's built-in package support:
 ```sh
-mkdir -p ~/.vim/pack/local/start
-cd ~/.vim/pack/local/start
-git clone github.com/rottencandy/vimkubectl.git
+git clone github.com/rottencandy/vimkubectl.git ~/.vim/pack/plugins/start/vimkubectl
 ```
 
-Help tag files can be generated with `:helptags ALL`.
+Help tag files can be generated inside Vim using `:helptags ALL`.
 
 
 Usage
 -----
 
-Make sure you are logged in to your cluster using `kubectl` or a similar command.
+Make sure your Kubernetes cluster is reachable and configured using `kubectl` or a similar command.(see [configuration](#configuration))
 
-Use `g:vimkubectl_command` to specify the command to use. (default: `kubectl`)
+- `:KGet {resource}`
 
-- `:KGet {resource_type}`
+  Get a list of all objects of type `{resource}`. If `{resource}` is not given, `pod` is used.
 
-  Get a list of all resources that match `{resource_type}`. If `{resource_type}` is not given, `pod` is used.
-
-  You can also use `<Tab>` to cycle through possible resource types.
+  You can also use `<Tab>` for completion and to cycle through possible resources.
 
   - `gr` to refresh/update the list of resources.
 
@@ -38,25 +36,43 @@ Use `g:vimkubectl_command` to specify the command to use. (default: `kubectl`)
 
   - `is` to open in a split.
 
-  - `iv` to open in a vertical split..
+  - `iv` to open in a vertical split.
 
   - `it` to open in a new tab.
 
   - `dd` to delete the resource under cursor. (Prompts for confirmation)
 
-- The manifest can be edited just like a regular file, except that it gets applied on every save.
+- The opened manifest can be edited just like a regular file, except that it gets applied on every save.
 
-  The following mappings are available in this buffer:
+  The following mappings are available in these buffers:
 
   - `gr` to refresh/update the manifest. Note that this will disregard any unsaved local changes.
 
-  - `:KSave {filename}` to save the manifest to a file. If `{filename}` is not given, the resource name is used.
+  - `:KSave {filename}` to save the manifest locally. If `{filename}` is not given, the resource object name is used.
 
 - `:KNamespace {name}`
 
-  Switch the currently selected namespace to `{name}`. If `{name}` is not given, prints the current namespace.
+  Change the currently selected namespace to `{name}`. If `{name}` is not given, prints the currently used namespace.
 
-  `<Tab>` can be used to cycle through available namespaces.
+  `<Tab>` completion can be used to cycle through available namespaces.
+
+Configuration
+------------
+
+If your `kubectl` command is under a different name, or you are using an alternate command, it can be specified with `g:vimkubectl_command`.
+
+For example to specify OpenShift's `oc` as the command, add this to your `vimrc`:
+```
+let g:vimkubectl_command = 'oc'
+```
+
+The maximum wait time, or the amount of time to wait for the cluster to return, can be specified with `g:vimkubectl_timeout`. The default timeout limit is `5` seconds.
+
+For example, to change the wait time to `10` seconds:
+```
+let g:vimkubectl_timeout = 10
+```
+
 
 License
 -------

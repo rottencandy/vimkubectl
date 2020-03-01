@@ -185,8 +185,12 @@ endfun
 
 
 fun! vimkubectl#getResource(res) abort
-  if s:currentNamespace ==# ''
+  if !len(s:currentNamespace)
     call s:fetchCurrentNamespace()
+    if !len(s:currentNamespace)
+      echohl WarningMsg | echom 'Error: Unable to communicate with cluster' | echohl None
+      return
+    endif
   endif
   let s:currentResource = len(a:res) ? a:res : 'pods'
   call s:updateResourcesList()
@@ -200,7 +204,7 @@ endfun
 let s:currentNamespace = ''
 
 fun! s:fetchCurrentNamespace() abort
-  let namespace = system(g:vimkubectl_command . ' config view --minify -o ''jsonpath={..namespace}'' --request-timeout=' . g:vimkubectl_timeout . 's')
+  let namespace = system(g:vimkubectl_command . ' config view -o ''jsonpath={..namespace}'' --request-timeout=' . g:vimkubectl_timeout . 's')
   if v:shell_error !=# 0
     echohl WarningMsg | echom 'Error: ' . l:namespace | echohl None
     return

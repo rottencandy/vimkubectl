@@ -1,4 +1,4 @@
-vimkubectl.txt*	Manage Kubernetes resources from Vim
+*vimkubectl.txt*	Manage Kubernetes resources from Vim
 
 INTRODUCTION                                    *vimkubectl*
 
