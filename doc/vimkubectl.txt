@@ -15,14 +15,20 @@ COMMANDS                                        *vimkubectl-commands*
 			match {resource}. If {resource} is not given, pod is
 			used.
 
+:KEdit {resource} {object}                      *:KEdit*
+			Open a new split containing the manifest yaml of
+			{object} of type {resource}. This is functionally
+			similar to the `kubectl edit` command. (Also has
+			`<Tab>` completion)
+
 :KSave {filename}                               *:KSave*
-			Save the currently open manifest to a file.
+			Save the currently open manifest locally to a file.
 			If {filename} is not given, the resource name is used.
 			(NOTE: This command is only available when viewing
 			resource manifests)
 
 :Knamespace {name}                              *:KNamespace*
-			Switch to {name} as the current namespace.
+			Switch to using {name} as the current namespace.
 			If {name} is not given, prints the currently selected
 			namespace.
 			(NOTE: This option only sets the namespace for

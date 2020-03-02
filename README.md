@@ -42,6 +42,10 @@ Make sure your Kubernetes cluster is reachable and configured using `kubectl` or
 
   - `dd` to delete the resource under cursor. (Prompts for confirmation)
 
+- `:KEdit {resource} {object}`
+
+  Open a split containing the manifest of `{object}` of type `{resource}`. Also has `<Tab>` completion.
+
 - The opened manifest can be edited just like a regular file, except that it gets applied on every save.
 
   The following mappings are available in these buffers:
