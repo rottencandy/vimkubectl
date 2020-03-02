@@ -226,6 +226,17 @@ fun! vimkubectl#switchNamespace(name) abort
   echom 'Using namespace: ' . s:currentNamespace
 endfun
 
+fun! vimkubectl#editResourceObject(resource) abort
+  let manifest = s:fetchManifest(a:resource)
+  if v:shell_error ==# 0
+    let s:currentResourceName = join(split(a:resource), '/')
+    setlocal modifiable
+    call s:setupEditBuffer('split')
+    call s:redrawEditBuffer(l:manifest)
+    redraw!
+  endif
+endfun
+
 " Custom command completion functions
 " ------------------------------------------------------------------------
 
@@ -244,7 +255,19 @@ fun! vimkubectl#allResources(A, L, P)
   if v:shell_error !=# 0
     return ''
   endif
-  return availableResources
+  return l:availableResources
 endfun
+
+function! vimkubectl#allResourcesAndObjects(arg, line, pos)
+  if !len(s:currentNamespace)
+    call s:fetchCurrentNamespace()
+  endif
+  let arguments = split(a:line, '\s\+')
+  if len(arguments) > 2 || len(arguments) > 1 && a:arg=~ '^\s*$'
+    return system(g:vimkubectl_command . ' get ' . arguments[1] . ' -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
+  else
+    return vimkubectl#allResources('', '', '')
+  endif
+endfunction
 
 " vim: ts:et:sw=2:sts=2:

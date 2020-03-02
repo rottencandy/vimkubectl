@@ -22,3 +22,4 @@
 " WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
 command -bar -bang -complete=custom,vimkubectl#allResources -nargs=? KGet :call vimkubectl#getResource(<q-args>)
 command -bar -bang -complete=custom,vimkubectl#allNamespaces -nargs=? KNamespace :call vimkubectl#switchNamespace(<q-args>)
+command -bar -bang -complete=custom,vimkubectl#allResourcesAndObjects -nargs=+ KEdit :call vimkubectl#editResourceObject(<q-args>)
