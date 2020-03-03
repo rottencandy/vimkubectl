@@ -242,10 +242,9 @@ endfun
 
 fun! vimkubectl#allNamespaces(A, L, P)
   " Command separated to allow clean detection of exit code
-  let rawNS = system(g:vimkubectl_command . ' get ns -o name --request-timeout=' . g:vimkubectl_timeout . 's')
+  let namespaces = system(g:vimkubectl_command . ' get ns -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's')
   if v:shell_error !=# 0
     return ''
-  let namespaces = system('echo ''' . l:rawNS . ''' | awk -F "/" ''{print $2}''')
   endif
   return l:namespaces
 endfun
