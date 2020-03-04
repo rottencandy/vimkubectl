@@ -31,6 +31,9 @@ if !exists('g:vimkubectl_timeout')
 endif
 
 
+fun! s:printWarning(message) abort
+  echohl WarningMsg | echom 'Error: ' . a:message | echohl None
+endfun
 " Edit mode functions
 " ------------------------------------------------------------------------
 
@@ -44,28 +47,18 @@ fun! s:applyManifest() abort
     echom join(l:result, "\n")
     call s:updateEditBuffer()
   else
-    echohl WarningMsg | echom 'Error: ' . join(l:result, "\n") | echohl None
+    call s:printWarning(join(l:result, "\n"))
   endif
 endfun
 
 fun! s:saveToFile(name) abort
   let fileName = a:name
-  if a:name ==# ''
+  if len(a:name)
     let l:fileName = substitute(s:currentResourceName, '\v\/', '_', '') . '.yaml'
   endif
   let manifest = getline('1', '$')
   call writefile(l:manifest, l:fileName)
   echom 'Saved to ' . l:fileName
-endfun
-
-fun! s:setupEditBuffer(bufType) abort
-  silent! execute a:bufType . ' __' . s:currentResourceName
-  setlocal buftype=acwrite
-  setlocal bufhidden=wipe
-  setlocal ft=yaml
-  autocmd BufWriteCmd <buffer> call <SID>applyManifest()
-  nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
-  command -buffer -bar -bang -nargs=? KSave :call <SID>saveToFile(<q-args>)
 endfun
 
 fun! s:redrawEditBuffer(resourceManifest) abort
@@ -82,6 +75,16 @@ fun! s:updateEditBuffer() abort
   endif
 endfun
 
+fun! s:setupEditBuffer(bufType) abort
+  silent! execute a:bufType . ' __' . s:currentResourceName
+  setlocal buftype=acwrite
+  setlocal bufhidden=wipe
+  setlocal ft=yaml
+  autocmd BufWriteCmd <buffer> call <SID>applyManifest()
+  nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
+  command -buffer -bar -bang -nargs=? KSave :call <SID>saveToFile(<q-args>)
+endfun
+
 fun! s:resourceUnderCursor() abort
   if getpos('.')[1] <=# 3
     return ''
@@ -96,7 +99,7 @@ endfun
 fun! s:fetchManifest(resource) abort
   let manifest = systemlist(g:vimkubectl_command . ' get ' . a:resource . ' -o yaml --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
   if v:shell_error !=# 0
-    echohl WarningMsg | echom 'Error: ' . join(l:manifest, "\n") | echohl None
+    call s:printWarning(join(l:manifest, "\n"))
     return
   endif
   return l:manifest
@@ -122,7 +125,7 @@ fun! s:deleteResource() abort
     if l:choice ==# 1
       let result = systemlist(g:vimkubectl_command . ' delete ' . l:resource . ' -n ' . s:currentNamespace)
       if v:shell_error !=# 0
-        echohl WarningMsg | echom 'Error: ' . join(l:result, "\n") | echohl None
+        call s:printWarning(join(l:result, "\n"))
       else
         call s:updateViewBuffer()
         echom join(l:result, "\n")
@@ -170,7 +173,7 @@ fun! s:updateResourcesList() abort
   silent let newResources = systemlist(g:vimkubectl_command . ' get ' . s:currentResource . ' -o name --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
   redraw!
   if v:shell_error != 0
-    echohl WarningMsg | echom 'Error: ' . join(l:newResources, "\n") | echohl None
+    call s:printWarning(join(l:newResources, "\n"))
     return
   endif
   let s:resourcesList = l:newResources
@@ -188,7 +191,7 @@ fun! vimkubectl#getResource(res) abort
   if !len(s:currentNamespace)
     call s:fetchCurrentNamespace()
     if !len(s:currentNamespace)
-      echohl WarningMsg | echom 'Error: Unable to communicate with cluster' | echohl None
+      call s:printWarning('Error: Unable to communicate with cluster')
       return
     endif
   endif
@@ -206,15 +209,15 @@ let s:currentNamespace = ''
 fun! s:fetchCurrentNamespace() abort
   let namespace = system(g:vimkubectl_command . ' config view -o ''jsonpath={..namespace}'' --request-timeout=' . g:vimkubectl_timeout . 's')
   if v:shell_error !=# 0
-    echohl WarningMsg | echom 'Error: ' . l:namespace | echohl None
+    call s:printWarning('Error: ' . l:namespace)
     return
   endif
   let s:currentNamespace = l:namespace
 endfun
 
 fun! vimkubectl#switchNamespace(name) abort
-  if a:name ==# ''
-    if s:currentNamespace ==# ''
+  if len(a:name)
+    if (s:currentNamespace)
       call s:fetchCurrentNamespace()
     endif
   else
@@ -230,7 +233,6 @@ fun! vimkubectl#editResourceObject(resource) abort
   let manifest = s:fetchManifest(a:resource)
   if v:shell_error ==# 0
     let s:currentResourceName = join(split(a:resource), '/')
-    setlocal modifiable
     call s:setupEditBuffer('split')
     call s:redrawEditBuffer(l:manifest)
     redraw!
