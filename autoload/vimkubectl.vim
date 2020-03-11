@@ -53,7 +53,7 @@ endfun
 
 fun! s:saveToFile(name) abort
   let fileName = a:name
-  if len(a:name)
+  if !len(a:name)
     let l:fileName = substitute(s:currentResourceName, '\v\/', '_', '') . '.yaml'
   endif
   let manifest = getline('1', '$')
@@ -216,8 +216,8 @@ fun! s:fetchCurrentNamespace() abort
 endfun
 
 fun! vimkubectl#switchNamespace(name) abort
-  if len(a:name)
-    if (s:currentNamespace)
+  if !len(a:name)
+    if !len(s:currentNamespace)
       call s:fetchCurrentNamespace()
     endif
   else
