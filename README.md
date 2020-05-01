@@ -3,7 +3,7 @@ Vimkubectl
 
 _Manage any Kubernetes resource from Vim._
 
-Vimkubectl is plugin for Vim8.1+ and NeoVim which provides a set of commands and mappings to view and manipulate any valid Kubernetes resource from inside Vim.
+Vimkubectl is a plugin for Vim8.1+ and NeoVim which provides a set of commands and mappings to view and manipulate any valid Kubernetes resource from inside Vim.
 
 
 Installation
