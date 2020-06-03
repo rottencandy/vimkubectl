@@ -207,7 +207,7 @@ endfun
 let s:currentNamespace = ''
 
 fun! s:fetchCurrentNamespace() abort
-  let namespace = system(g:vimkubectl_command . ' config view -o ''jsonpath={..namespace}'' --request-timeout=' . g:vimkubectl_timeout . 's')
+  let namespace = system(g:vimkubectl_command . ' config view --minify -o ''jsonpath={..namespace}'' --request-timeout=' . g:vimkubectl_timeout . 's')
   if v:shell_error !=# 0
     call s:printWarning('Error: ' . l:namespace)
     return
