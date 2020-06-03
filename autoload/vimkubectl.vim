@@ -265,10 +265,14 @@ function! vimkubectl#allResourcesAndObjects(arg, line, pos)
   endif
   let arguments = split(a:line, '\s\+')
   if len(arguments) > 2 || len(arguments) > 1 && a:arg=~ '^\s*$'
-    return system(g:vimkubectl_command . ' get ' . arguments[1] . ' -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
+    let objectList = system(g:vimkubectl_command . ' get ' . arguments[1] . ' -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
   else
-    return vimkubectl#allResources('', '', '')
+    let objectList = vimkubectl#allResources('', '', '')
   endif
+  if v:shell_error !=# 0
+    return ''
+  endif
+  return l:objectList
 endfunction
 
 " vim: ts:et:sw=2:sts=2:
