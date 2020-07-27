@@ -39,7 +39,7 @@ endfun
 
 let s:currentResourceName = ''
 
-fun! s:applyManifest() abort
+fun! vimkubectl#applyBuffer() abort
   echo 'Applying resource...'
   let manifest = getline('1', '$')
   silent let result = systemlist(g:vimkubectl_command . ' apply -n ' . s:currentNamespace . ' -f -', l:manifest)
@@ -80,9 +80,9 @@ fun! s:setupEditBuffer(bufType) abort
   setlocal buftype=acwrite
   setlocal bufhidden=wipe
   setlocal ft=yaml
-  autocmd BufWriteCmd <buffer> call <SID>applyManifest()
+  autocmd BufWriteCmd <buffer> call vimkubectl#applyBuffer()
   nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
-  command -buffer -bar -bang -nargs=? KSave :call <SID>saveToFile(<q-args>)
+  command -buffer -bar -bang -nargs=? Ksave :call <SID>saveToFile(<q-args>)
 endfun
 
 fun! s:resourceUnderCursor() abort
@@ -202,6 +202,7 @@ fun! vimkubectl#getResource(res) abort
   endif
   call s:setupViewBuffer()
   call s:redrawViewBuffer()
+  redraw
 endfun
 
 let s:currentNamespace = ''

@@ -24,7 +24,7 @@ Usage
 
 Make sure your Kubernetes cluster is reachable and configured using `kubectl` or a similar command.(see [configuration](#configuration))
 
-- `:KGet {resource}`
+- `:Kget {resource}`
 
   Get a list of all objects of type `{resource}`. If `{resource}` is not given, `pod` is used.
 
@@ -42,7 +42,7 @@ Make sure your Kubernetes cluster is reachable and configured using `kubectl` or
 
   - `dd` to delete the resource under cursor. (Prompts for confirmation)
 
-- `:KEdit {resource} {object}`
+- `:Kedit {resource} {object}`
 
   Open a split containing the manifest of `{object}` of type `{resource}`. Also has `<Tab>` completion.
 
@@ -52,13 +52,17 @@ Make sure your Kubernetes cluster is reachable and configured using `kubectl` or
 
   - `gr` to refresh/update the manifest. Note that this will disregard any unsaved local changes.
 
-  - `:KSave {filename}` to save the manifest locally. If `{filename}` is not given, the resource object name is used.
+  - `:Ksave {filename}` to save the manifest locally. If `{filename}` is not given, the resource object name is used.
 
-- `:KNamespace {name}`
+- `:Knamespace {name}`
 
   Change the currently selected namespace to `{name}`. If `{name}` is not given, prints the currently used namespace.
 
   `<Tab>` completion can be used to cycle through available namespaces.
+
+- `:Kapply`
+
+  Apply the currently active file content. Can be used on any open buffer.
 
 Configuration
 ------------

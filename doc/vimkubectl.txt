@@ -10,18 +10,18 @@ This plugin assumes that the user is logged in to the Kubernetes cluster using
 
 COMMANDS                                        *vimkubectl-commands*
 
-:KGet {resource}                                *:KGet*
+:Kget {resource}                                *:KGet*
 			Open a split that displays a list of all resources that
 			match {resource}. If {resource} is not given, pod is
 			used.
 
-:KEdit {resource} {object}                      *:KEdit*
+:Kedit {resource} {object}                      *:KEdit*
 			Open a new split containing the manifest yaml of
 			{object} of type {resource}. This is functionally
 			similar to the `kubectl edit` command. (Also has
 			`<Tab>` completion)
 
-:KSave {filename}                               *:KSave*
+:Ksave {filename}                               *:KSave*
 			Save the currently open manifest locally to a file.
 			If {filename} is not given, the resource name is used.
 			(NOTE: This command is only available when viewing
