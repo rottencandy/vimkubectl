@@ -171,7 +171,8 @@ endfun
 fun! s:updateResourcesList() abort
   echo 'Fetching resources...'
   silent let newResources = systemlist(g:vimkubectl_command . ' get ' . s:currentResource . ' -o name --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
-  redraw!
+  echon "\r\r"
+  echon ''
   if v:shell_error != 0
     call s:printWarning(join(l:newResources, "\n"))
     return
@@ -202,7 +203,6 @@ fun! vimkubectl#getResource(res) abort
   endif
   call s:setupViewBuffer()
   call s:redrawViewBuffer()
-  redraw
 endfun
 
 let s:currentNamespace = ''
@@ -236,7 +236,6 @@ fun! vimkubectl#editResourceObject(resource) abort
     let s:currentResourceName = join(split(a:resource), '/')
     call s:setupEditBuffer('split')
     call s:redrawEditBuffer(l:manifest)
-    redraw!
   endif
 endfun
 
