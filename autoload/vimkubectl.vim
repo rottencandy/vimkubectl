@@ -39,13 +39,17 @@ endfun
 
 let s:currentResourceName = ''
 
-fun! vimkubectl#applyBuffer() abort
+fun! vimkubectl#applyBuffer(updateBuffer) range abort
   echo 'Applying resource...'
-  let manifest = getline('1', '$')
+  call s:verifyNamespace()
+  let manifest = getline(a:firstline, a:lastline)
   silent let result = systemlist(g:vimkubectl_command . ' apply -n ' . s:currentNamespace . ' -f -', l:manifest)
   if v:shell_error ==# 0
     echom join(l:result, "\n")
-    call s:updateEditBuffer()
+    if a:updateBuffer
+      echo 'Successful. Updating manifest...'
+      call s:updateEditBuffer()
+    endif
   else
     call s:printWarning(join(l:result, "\n"))
   endif
@@ -80,7 +84,7 @@ fun! s:setupEditBuffer(bufType) abort
   setlocal buftype=acwrite
   setlocal bufhidden=wipe
   setlocal ft=yaml
-  autocmd BufWriteCmd <buffer> call vimkubectl#applyBuffer()
+  autocmd BufWriteCmd <buffer> 1,$call vimkubectl#applyBuffer(1)
   nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
   command -buffer -bar -bang -nargs=? Ksave :call <SID>saveToFile(<q-args>)
 endfun
@@ -189,13 +193,7 @@ endfun
 
 
 fun! vimkubectl#getResource(res) abort
-  if !len(s:currentNamespace)
-    call s:fetchCurrentNamespace()
-    if !len(s:currentNamespace)
-      call s:printWarning('Error: Unable to communicate with cluster')
-      return
-    endif
-  endif
+  call s:verifyNamespace()
   let s:currentResource = len(a:res) ? a:res : 'pods'
   call s:updateResourcesList()
   if v:shell_error !=# 0
@@ -216,11 +214,15 @@ fun! s:fetchCurrentNamespace() abort
   let s:currentNamespace = l:namespace
 endfun
 
+fun! s:verifyNamespace() abort
+  if !len(s:currentNamespace)
+    call s:fetchCurrentNamespace()
+  endif
+endfun
+
 fun! vimkubectl#switchNamespace(name) abort
   if !len(a:name)
-    if !len(s:currentNamespace)
-      call s:fetchCurrentNamespace()
-    endif
+    call s:verifyNamespace()
   else
     let s:currentNamespace = a:name
     if bufwinnr('__KUBERNETES__') !=# -1
@@ -260,9 +262,7 @@ fun! vimkubectl#allResources(A, L, P)
 endfun
 
 function! vimkubectl#allResourcesAndObjects(arg, line, pos)
-  if !len(s:currentNamespace)
-    call s:fetchCurrentNamespace()
-  endif
+  call s:verifyNamespace()
   let arguments = split(a:line, '\s\+')
   if len(arguments) > 2 || len(arguments) > 1 && a:arg=~ '^\s*$'
     let objectList = system(g:vimkubectl_command . ' get ' . arguments[1] . ' -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)

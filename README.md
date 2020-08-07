@@ -62,9 +62,10 @@ Make sure your Kubernetes cluster is reachable and configured using `kubectl` or
 
   `<Tab>` completion can be used to cycle through available namespaces.
 
-- `:Kapply`
+- `:{range}Kapply`
 
-  Apply the currently active file content. Can be used on any open buffer.
+  Apply file contents. When used with a selection(`{range}`), applies the selected content, else applies the entire file.
+  Can be used on any open buffer.
 
 Configuration
 ------------

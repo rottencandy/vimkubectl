@@ -32,8 +32,14 @@ COMMANDS                                        *vimkubectl-commands*
 			If {name} is not given, prints the currently selected
 			namespace.
 			(NOTE: This option only sets the namespace for
-			|vimkubectl|
-			commands, and does not set/modify `kubectl config`)
+			|vimkubectl| commands,
+			and does not set/modify `kubectl config`)
+
+:{range}Kapply                                  *:Kapply*
+			Apply file contents. When used with a
+			selection({range}), applies the selected content, else
+			applies the entire file.
+			Can be used on any open buffer.
 
 MAPPINGS                                        *vimkubectl-mapping*
 
