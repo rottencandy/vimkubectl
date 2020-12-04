@@ -15,7 +15,7 @@ Use your favourite plugin manager.
 
 Or use Vim8's built-in package support:
 ```sh
-git clone github.com/rottencandy/vimkubectl.git ~/.vim/pack/plugins/start/vimkubectl
+git clone https://github.com/rottencandy/vimkubectl.git ~/.vim/pack/plugins/start/vimkubectl
 ```
 
 Help tag files can be generated inside Vim using `:helptags ALL`.
