@@ -1,4 +1,4 @@
-" Copyright (c) 2020 Mohammed Saud
+" Copyright (c) Mohammed Saud
 "
 " MIT License
 "
