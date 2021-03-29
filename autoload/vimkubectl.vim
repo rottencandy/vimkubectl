@@ -145,7 +145,7 @@ let s:currentResource = ''
 let s:resourcesList = []
 
 fun! s:setupViewBuffer() abort
-  let existing = bufwinnr('__KUBERNETES__')
+  let existing = bufwinnr('^__KUBERNETES__$')
   if l:existing ==# -1
     silent! split __KUBERNETES__
     setlocal buftype=nofile
@@ -225,7 +225,7 @@ fun! vimkubectl#switchNamespace(name) abort
     call s:verifyNamespace()
   else
     let s:currentNamespace = a:name
-    if bufwinnr('__KUBERNETES__') !=# -1
+    if bufwinnr('^__KUBERNETES__$') !=# -1
       call s:updateViewBuffer()
     endif
   endif
