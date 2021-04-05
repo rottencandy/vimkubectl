@@ -22,6 +22,9 @@
 " WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
 
 
+" CONFIGURATION VARIABLES
+" -----------------------
+
 if !exists('g:vimkubectl_command')
   let g:vimkubectl_command = 'kubectl'
 endif
@@ -31,65 +34,150 @@ if !exists('g:vimkubectl_timeout')
 endif
 
 
+" K8S UTILS
+" ---------
+
+" Create command using g:vimkubectl_command
+fun! s:craftCommand(command, namespace) abort
+  let specifyNamespace = len(a:namespace) ? '-n ' . a:namespace : ''
+  return g:vimkubectl_command . ' ' . a:command . ' ' . l:specifyNamespace . ' --request-timeout=' . g:vimkubectl_timeout . 's'
+endfun
+
+" Fetch list of `resourceType` resources
+fun! s:fetchResourceList(resourceType, namespace) abort
+  return systemlist(s:craftCommand('get ' . a:resourceType . ' -o name', a:namespace))
+endfun
+
+" Fetch manifest of resource
+fun! s:fetchResourceManifest(resourceType, resource, namespace) abort
+  return systemlist(s:craftCommand('get ' . a:resourceType . ' ' . a:resource . ' -o yaml', a:namespace))
+endfun
+
+" Delete resource
+fun! s:deleteResource(resourceType, resource, namespace) abort
+  return system(s:craftCommand('delete ' . a:resourceType . ' ' . a:resource, a:namespace))
+endfun
+
+" Apply string
+fun! s:applyString(stringData, namespace) abort
+  return system(s:craftCommand('apply -f -', a:namespace), a:stringData)
+endfun
+
+" Get currently active namespace context
+" (Taken from kubectl's bash_completion file)
+fun! s:fetchActiveNamespace() abort
+  return system(s:craftCommand('config view --minify -o ''jsonpath={..namespace}''', ''))
+endfun
+
+
+" UTILS
+" -----
+
+" Clear all undo history
+" Source: https://vi.stackexchange.com/a/16915/22360
+fun! s:resetUndo() abort
+  let old_undo = &undolevels
+  set undolevels=-1
+  silent! exec "normal a \<BS>\<Esc>"
+  let &undolevels = old_undo
+endfun
+
+" TODO: find a way to store namespace state somewhere else
+let s:currentNamespace = ''
+
+fun! s:getActiveNamespace() abort
+  if !len(s:currentNamespace)
+    let s:currentNamespace = s:fetchActiveNamespace()
+  endif
+  return s:currentNamespace
+endfun
+
+fun! s:setActiveNamespace(namespace) abort
+  let s:currentNamespace = a:namespace
+endfun
+
+" Print a message with warning highlight
 fun! s:printWarning(message) abort
   echohl WarningMsg | echom 'Error: ' . a:message | echohl None
 endfun
-" Edit mode functions
-" ------------------------------------------------------------------------
 
-let s:currentResourceName = ''
-
-fun! vimkubectl#applyBuffer(updateBuffer) range abort
+" Apply the contents of the active buffer,
+fun! s:applyActiveBuffer(startLine, endLine) abort
   echo 'Applying resource...'
-  call s:verifyNamespace()
-  let manifest = getline(a:firstline, a:lastline)
-  silent let result = systemlist(g:vimkubectl_command . ' apply -n ' . s:currentNamespace . ' -f -', l:manifest)
-  if v:shell_error ==# 0
-    echom join(l:result, "\n")
-    if a:updateBuffer
-      echo 'Successful. Updating manifest...'
-      call s:updateEditBuffer()
-    endif
-  else
-    call s:printWarning(join(l:result, "\n"))
-  endif
+  let manifest = getline(a:startLine, a:endLine)
+  return s:applyString(l:manifest, s:getActiveNamespace())
 endfun
 
-fun! s:saveToFile(name) abort
+" TODO: Figure out better way to create namespaces
+" Namespace for functions that are intended to be run from edit buffers
+" let s:editBuffer = {}
+
+" Save buffer file contents to local file
+fun! s:editBuffer_saveToFile(name) abort
   let fileName = a:name
   if !len(a:name)
-    let l:fileName = substitute(s:currentResourceName, '\v\/', '_', '') . '.yaml'
+    let l:fileName = substitute(expand('%'), '\v\/', '_', '') . '.yaml'
   endif
   let manifest = getline('1', '$')
   call writefile(l:manifest, l:fileName)
   echom 'Saved to ' . l:fileName
 endfun
 
-fun! s:redrawEditBuffer(resourceManifest) abort
+" Fetch the manifest of the resource and fill up the buffer,
+" after discarding any existing content
+fun! s:editBuffer_refreshEditBuffer() abort
+  let fullResource = trim(expand('%'), 'kube://', 1)
+  let resource = split(l:fullResource, '/')
+  let updatedManifest = s:fetchResourceManifest(l:resource[0], l:resource[1], s:getActiveNamespace())
+  if v:shell_error !=# 0
+    return
+  endif
   silent! execute '%d'
-  call setline('.', a:resourceManifest)
+  call setline('.', l:updatedManifest)
+  call s:resetUndo()
   setlocal nomodified
 endfun
 
-fun! s:updateEditBuffer() abort
-  let updatedManifest = s:fetchManifest(s:currentResourceName)
-  if v:shell_error ==# 0
-    call s:redrawEditBuffer(updatedManifest)
-    echom 'Updated manifest'
+" Apply the buffer contents
+fun! s:editBuffer_applyBuffer() range abort
+  echo 'Applying resource...'
+  silent let result = s:applyActiveBuffer(a:firstline, a:lastline)
+  if v:shell_error !=# 0
+    call s:printWarning(l:result)
+    return
+  endif
+  echom l:result
+  echo 'Successful. Updating manifest...'
+  call s:editBuffer_refreshEditBuffer()
+  echom 'Updated manifest'
+endfun
+
+" Create or switch to edit buffer(kube://{resourceType}/{resourceName})
+fun! s:openEditBuffer(openMethod, resourceType, resourceName) abort
+  let existing = bufwinnr('^kube://' . a:resourceType . '/' . a:resourceName . '$')
+  if l:existing ==# -1
+    " TODO verify if openMethod is correct
+    " TODO warn before redrawing with unsaved changes
+    silent! exec a:openMethod . ' kube://' . a:resourceType . '/' . a:resourceName
+    setlocal buftype=acwrite
+    setlocal bufhidden=delete
+    setlocal filetype=yaml
+    setlocal noswapfile
+    autocmd BufWriteCmd <buffer> 1,$call <SID>editBuffer_applyBuffer()
+    nnoremap <silent><buffer> gr :call <SID>editBuffer_refreshEditBuffer()<CR>
+    command -buffer -bar -bang -nargs=? Ksave :call <SID>editBuffer_saveToFile(<q-args>)
+  else
+    silent! execute l:existing . 'wincmd w'
   endif
 endfun
 
-fun! s:setupEditBuffer(bufType) abort
-  silent! execute a:bufType . ' __' . s:currentResourceName
-  setlocal buftype=acwrite
-  setlocal bufhidden=wipe
-  setlocal ft=yaml
-  autocmd BufWriteCmd <buffer> 1,$call vimkubectl#applyBuffer(1)
-  nnoremap <silent><buffer> gr :call <SID>updateEditBuffer()<CR>
-  command -buffer -bar -bang -nargs=? Ksave :call <SID>saveToFile(<q-args>)
-endfun
+" Namespace for functions that are intended to be run from view buffers
+"let s:viewBuffer = {}
 
-fun! s:resourceUnderCursor() abort
+" Get the resource under cursor line,
+" If cursor is on header, or blank space, return ''
+" TODO: range support
+fun! s:viewBuffer_resourceUnderCursor() abort
   if getpos('.')[1] <=# 3
     return ''
   endif
@@ -100,150 +188,154 @@ fun! s:resourceUnderCursor() abort
   return ''
 endfun
 
-fun! s:fetchManifest(resource) abort
-  let manifest = systemlist(g:vimkubectl_command . ' get ' . a:resource . ' -o yaml --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
-  if v:shell_error !=# 0
-    call s:printWarning(join(l:manifest, "\n"))
+" Open edit buffer for resource under cursor,
+" `opemMethod` can be one of [edit, sp, vs, tabe]
+fun! s:viewBuffer_editResource(openMethod) abort
+  let fullResource = s:viewBuffer_resourceUnderCursor()
+  if !len(l:fullResource)
     return
   endif
-  return l:manifest
+
+  let resource = split(l:fullResource, '/')
+  call s:openEditBuffer(a:openMethod, l:resource[0], l:resource[1])
+  call s:editBuffer_refreshEditBuffer()
 endfun
 
-fun! s:editResource(openAs) abort
-  let resource = s:resourceUnderCursor()
-  if len(l:resource)
-    let manifest = s:fetchManifest(l:resource)
-    if v:shell_error ==# 0
-      let s:currentResourceName = l:resource
-      setlocal modifiable
-      call s:setupEditBuffer(a:openAs)
-      call s:redrawEditBuffer(l:manifest)
-    endif
+" Delete the resource under cursor, after confirmation prompt
+fun! s:viewBuffer_deleteResource() abort
+  let fullResource = s:viewBuffer_resourceUnderCursor()
+  let resource = split(l:fullResource, '/')
+  if len(l:resource) !=# 2
+    return
   endif
-endfun
 
-fun! s:deleteResource() abort
-  let resource = s:resourceUnderCursor()
-  if len(l:resource)
-    let choice = confirm('Are you sure you want to delete ' . l:resource . ' ?', "&Yes\n&No")
-    if l:choice ==# 1
-      let result = systemlist(g:vimkubectl_command . ' delete ' . l:resource . ' -n ' . s:currentNamespace)
-      if v:shell_error !=# 0
-        call s:printWarning(join(l:result, "\n"))
-      else
-        call s:updateViewBuffer()
-        echom join(l:result, "\n")
-      endif
-    endif
+  let choice = confirm('Are you sure you want to delete ' . l:resource[1] . ' ?', "&Yes\n&No")
+  if l:choice !=# 1
+    return
   endif
-endfun
 
-" Watch mode functions
-" ------------------------------------------------------------------------
-
-let s:currentResource = ''
-let s:resourcesList = []
-
-fun! s:setupViewBuffer() abort
-  let existing = bufwinnr('^__KUBERNETES__$')
-  if l:existing ==# -1
-    silent! split __KUBERNETES__
-    setlocal buftype=nofile
-    setlocal bufhidden=wipe
-    setlocal ft=kubernetes
-    nnoremap <silent><buffer> ii :call <SID>editResource('edit')<CR>
-    nnoremap <silent><buffer> is :call <SID>editResource('sp')<CR>
-    nnoremap <silent><buffer> iv :call <SID>editResource('vs')<CR>
-    nnoremap <silent><buffer> it :call <SID>editResource('tabe')<CR>
-    nnoremap <silent><buffer> dd :call <SID>deleteResource()<CR>
-    nnoremap <silent><buffer> gr :call <SID>updateViewBuffer()<CR>
+  echo 'Deleting...'
+  let result = s:deleteResource(l:resource[0], l:resource[1], s:getActiveNamespace())
+  if v:shell_error !=# 0
+    call s:printWarning(l:result)
   else
-    silent! execute l:existing . 'wincmd w'
+    call s:viewBuffer_refreshViewBuffer()
+    echom l:result
   endif
 endfun
 
-fun! s:redrawViewBuffer() abort
-  call s:setupViewBuffer()
-  setlocal modifiable
-  silent! execute '%d'
-  let details = ['Namespace: ' . s:currentNamespace, 'Resource: ' . s:currentResource, '']
-  call append(0, l:details)
-  call setline('.', s:resourcesList)
-  setlocal nomodifiable
+" Create header text to be shown at the top of the buffer
+fun! s:viewBuffer_headerText(namespace, resource) abort
+  return [
+        \ 'Namespace: ' . a:namespace,
+        \ 'Resource: ' . a:resource,
+        \ '',
+        \ ]
 endfun
 
-fun! s:updateResourcesList() abort
+" Fetch the resources related to buffer and fill it up,
+" after discarding any existing content
+fun! s:viewBuffer_refreshViewBuffer() abort
+  let resourceType = trim(expand('%'), 'kube://', 1)
+  let namespace = s:getActiveNamespace()
+
   echo 'Fetching resources...'
-  silent let newResources = systemlist(g:vimkubectl_command . ' get ' . s:currentResource . ' -o name --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
+  let resourceList = s:fetchResourceList(l:resourceType, l:namespace)
   echon "\r\r"
   echon ''
   if v:shell_error != 0
-    call s:printWarning(join(l:newResources, "\n"))
+    call s:printWarning(join(l:resourceList, "\n"))
+    " TODO: close buffer if already empty
     return
   endif
-  let s:resourcesList = l:newResources
+
+  setlocal modifiable
+  silent! execute '%d'
+  call append(0, s:viewBuffer_headerText(l:namespace, l:resourceType))
+  call setline('.', l:resourceList)
+  call s:resetUndo()
+  setlocal nomodifiable
 endfun
 
-fun! s:updateViewBuffer() abort
-  call s:updateResourcesList()
-  if v:shell_error ==# 0
-    call s:redrawViewBuffer()
-  endif
-endfun
+" Create or switch to view buffer(kube://{resourceType})
+fun! s:openViewBuffer(resourceType) abort
+  let existing = bufwinnr('^kube://' . a:resourceType . '$')
+  if l:existing ==# -1
+    silent! exec 'split kube://' . a:resourceType
+    setlocal buftype=nowrite
+    setlocal bufhidden=delete
+    setlocal filetype=kubernetes
+    setlocal noswapfile
 
-
-fun! vimkubectl#getResource(res) abort
-  call s:verifyNamespace()
-  let s:currentResource = len(a:res) ? a:res : 'pods'
-  call s:updateResourcesList()
-  if v:shell_error !=# 0
-    return
-  endif
-  call s:setupViewBuffer()
-  call s:redrawViewBuffer()
-endfun
-
-let s:currentNamespace = ''
-
-fun! s:fetchCurrentNamespace() abort
-  let namespace = system(g:vimkubectl_command . ' config view --minify -o ''jsonpath={..namespace}'' --request-timeout=' . g:vimkubectl_timeout . 's')
-  if v:shell_error !=# 0
-    call s:printWarning('Error: ' . l:namespace)
-    return
-  endif
-  let s:currentNamespace = l:namespace
-endfun
-
-fun! s:verifyNamespace() abort
-  if !len(s:currentNamespace)
-    call s:fetchCurrentNamespace()
-  endif
-endfun
-
-fun! vimkubectl#switchNamespace(name) abort
-  if !len(a:name)
-    call s:verifyNamespace()
+    nnoremap <silent><buffer> ii :call <SID>viewBuffer_editResource('edit')<CR>
+    nnoremap <silent><buffer> is :call <SID>viewBuffer_editResource('sp')<CR>
+    nnoremap <silent><buffer> iv :call <SID>viewBuffer_editResource('vs')<CR>
+    nnoremap <silent><buffer> it :call <SID>viewBuffer_editResource('tabe')<CR>
+    nnoremap <silent><buffer> dd :call <SID>viewBuffer_deleteResource()<CR>
+    nnoremap <silent><buffer> gr :call <SID>viewBuffer_refreshViewBuffer()<CR>
   else
-    let s:currentNamespace = a:name
-    if bufwinnr('^__KUBERNETES__$') !=# -1
-      call s:updateViewBuffer()
-    endif
+    silent! execute l:existing . 'wincmd w'
   endif
-  echom 'Using namespace: ' . s:currentNamespace
+  return winnr()
 endfun
 
-fun! vimkubectl#editResourceObject(resource) abort
-  let manifest = s:fetchManifest(a:resource)
-  if v:shell_error ==# 0
-    let s:currentResourceName = join(split(a:resource), '/')
-    call s:setupEditBuffer('split')
-    call s:redrawEditBuffer(l:manifest)
+
+" COMMAND FUNCTIONS
+" -----------------
+
+" :Knamespace
+" If `name` is provided, switch to using it as active namespace.
+" Else print currently active namespace.
+fun! vimkubectl#switchOrShowNamespace(name) abort
+  if len(a:name)
+    call s:setActiveNamespace(a:name)
   endif
+  " TODO: update any existing view buffers to use new namespace
+  echom 'Using namespace: ' . s:getActiveNamespace()
 endfun
 
-" Custom command completion functions
-" ------------------------------------------------------------------------
+" :Kget
+" Open or if already existing, switch to view buffer and load the list of `res` resources.
+" If `res` is not provided, 'pods' is assumed.
+fun! vimkubectl#openResourceListView(res) abort
+  let resource = len(a:res) ? split(a:res)[0] : 'pods'
+  let resourceType = split(resource, '/')[0]
+  let namespace = s:getActiveNamespace()
 
+  " TODO: store all state in buffer name (BufWriteCmd)
+  call s:openViewBuffer(l:resource)
+  call s:viewBuffer_refreshViewBuffer()
+endfun
+
+" :Kedit
+" Open an edit buffer with the resource manifest loaded
+fun! vimkubectl#editResourceObject(fullResource) abort
+  "TODO: validate fullResource
+  let resource = split(a:fullResource, '/')
+  "TODO: provide config option for default open method
+  call s:openEditBuffer('split', l:resource[0], l:resource[1])
+  call s:editBuffer_refreshEditBuffer()
+endfun
+
+" :Kapply
+" Apply the buffer contents.
+" If range is used, apply only the selected section,
+" else apply entire buffer
+fun! vimkubectl#applyActiveBuffer() range abort
+  echo 'Applying resource...'
+  silent let result = s:applyActiveBuffer(a:firstline, a:lastline)
+  if v:shell_error !=# 0
+    call s:printWarning(l:result)
+    return
+  endif
+  echom l:result
+  echo 'Successfully applied.'
+endfun
+
+" COMPLETION FUNCTIONS
+" --------------------
+
+" Completion function for namespaces
 fun! vimkubectl#allNamespaces(A, L, P)
   " Command separated to allow clean detection of exit code
   let namespaces = system(g:vimkubectl_command . ' get ns -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's')
@@ -253,6 +345,7 @@ fun! vimkubectl#allNamespaces(A, L, P)
   return l:namespaces
 endfun
 
+" Completion function for resource types only
 fun! vimkubectl#allResources(A, L, P)
   let availableResources = system(g:vimkubectl_command . ' api-resources -o name --cached --request-timeout=' . g:vimkubectl_timeout . 's --verbs=get | awk -F "." ''{print $1}''')
   if v:shell_error !=# 0
@@ -261,6 +354,7 @@ fun! vimkubectl#allResources(A, L, P)
   return l:availableResources
 endfun
 
+" Completion function for resource types and resource objects
 function! vimkubectl#allResourcesAndObjects(arg, line, pos)
   call s:verifyNamespace()
   let arguments = split(a:line, '\s\+')
