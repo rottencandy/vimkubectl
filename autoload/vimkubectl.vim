@@ -170,7 +170,8 @@ endfun
 " If cursor is on header, or blank space, return ''
 " TODO: range support
 fun! s:viewBuffer_resourceUnderCursor() abort
-  if getpos('.')[1] <=# 3
+  let headerLength = len(s:viewBuffer_headerText())
+  if getpos('.')[1] <=# l:headerLength
     return ''
   endif
   let resource = split(getline('.'))
