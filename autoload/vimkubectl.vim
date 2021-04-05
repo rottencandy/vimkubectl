@@ -22,23 +22,15 @@
 " WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
 
 
-" CONFIGURATION VARIABLES
-" -----------------------
-
-if !exists('g:vimkubectl_command')
-  let g:vimkubectl_command = 'kubectl'
-endif
-
-if !exists('g:vimkubectl_timeout')
-  let g:vimkubectl_timeout = 5
-endif
-
-
 " K8S UTILS
 " ---------
 
 " Create command using g:vimkubectl_command
 fun! s:craftCommand(command, namespace) abort
+  if !exists('g:vimkubectl_command') || !exists('g:vimkubectl_timeout')
+    s:printWarning('Configuration options not specified.')
+    return
+  endif
   let specifyNamespace = len(a:namespace) ? '-n ' . a:namespace : ''
   return g:vimkubectl_command . ' ' . a:command . ' ' . l:specifyNamespace . ' --request-timeout=' . g:vimkubectl_timeout . 's'
 endfun
@@ -98,7 +90,7 @@ endfun
 
 " Print a message with warning highlight
 fun! s:printWarning(message) abort
-  echohl WarningMsg | echom 'Error: ' . a:message | echohl None
+  echohl WarningMsg | echom '[Vimkubectl] Error: ' . a:message | echohl None
 endfun
 
 " Apply the contents of the active buffer,
