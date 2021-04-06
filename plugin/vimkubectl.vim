@@ -22,6 +22,11 @@
 " WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
 
 
+if exists('g:loaded_vimkubectl')
+  finish
+endif
+let g:loaded_vimkubectl = 1
+
 if !exists('g:vimkubectl_command')
   let g:vimkubectl_command = 'kubectl'
 endif
