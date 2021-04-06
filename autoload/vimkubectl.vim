@@ -95,7 +95,6 @@ endfun
 
 " Apply the contents of the active buffer,
 fun! s:applyActiveBuffer(startLine, endLine) abort
-  echo 'Applying resource...'
   let manifest = getline(a:startLine, a:endLine)
   return s:applyString(l:manifest, s:getActiveNamespace())
 endfun
@@ -120,8 +119,13 @@ endfun
 fun! s:editBuffer_refreshEditBuffer() abort
   let fullResource = trim(expand('%'), 'kube://', 1)
   let resource = split(l:fullResource, '/')
+
+  echo 'Fetching manifest...'
   let updatedManifest = s:fetchResourceManifest(l:resource[0], l:resource[1], s:getActiveNamespace())
+  echon "\r\r"
+  echon ''
   if v:shell_error !=# 0
+    call s:printWarning(join(l:updatedManifest, "\n"))
     return
   endif
   silent! execute '%d'
@@ -170,7 +174,7 @@ endfun
 " If cursor is on header, or blank space, return ''
 " TODO: range support
 fun! s:viewBuffer_resourceUnderCursor() abort
-  let headerLength = len(s:viewBuffer_headerText())
+  let headerLength = len(s:viewBuffer_headerText('', ''))
   if getpos('.')[1] <=# l:headerLength
     return ''
   endif
