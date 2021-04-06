@@ -148,6 +148,22 @@ fun! s:editBuffer_applyBuffer() range abort
   echom 'Updated manifest'
 endfun
 
+" Configure current buffer with appropriate options and default mappings for edit
+fun! s:editBuffer_prepareBuffer() abort
+  setlocal buftype=acwrite
+  setlocal bufhidden=delete
+  setlocal filetype=yaml
+  setlocal noswapfile
+
+  nnoremap <silent><buffer> gr :call <SID>editBuffer_refreshEditBuffer()<CR>
+  command! -buffer -bar -bang -nargs=? Ksave :call <SID>editBuffer_saveToFile(<q-args>)
+
+  augroup vimkubectl_internal_editBufferOnSave
+    autocmd! *
+    autocmd BufWriteCmd <buffer> 1,$call <SID>editBuffer_applyBuffer()
+  augroup END
+endfun
+
 " Create or switch to edit buffer(kube://{resourceType}/{resourceName})
 fun! s:openEditBuffer(openMethod, resourceType, resourceName) abort
   let existing = bufwinnr('^kube://' . a:resourceType . '/' . a:resourceName . '$')
@@ -155,15 +171,11 @@ fun! s:openEditBuffer(openMethod, resourceType, resourceName) abort
     " TODO verify if openMethod is correct
     " TODO warn before redrawing with unsaved changes
     silent! exec a:openMethod . ' kube://' . a:resourceType . '/' . a:resourceName
-    setlocal buftype=acwrite
-    setlocal bufhidden=delete
-    setlocal filetype=yaml
-    setlocal noswapfile
-    autocmd BufWriteCmd <buffer> 1,$call <SID>editBuffer_applyBuffer()
-    nnoremap <silent><buffer> gr :call <SID>editBuffer_refreshEditBuffer()<CR>
-    command -buffer -bar -bang -nargs=? Ksave :call <SID>editBuffer_saveToFile(<q-args>)
   else
     silent! execute l:existing . 'wincmd w'
+    " refresh needs to be done explicitly because buffer override will not
+    " happen to exising buffers (due to BufReadCmd)
+    call s:editBuffer_refreshEditBuffer()
   endif
 endfun
 
@@ -195,7 +207,6 @@ fun! s:viewBuffer_editResource(openMethod) abort
 
   let resource = split(l:fullResource, '/')
   call s:openEditBuffer(a:openMethod, l:resource[0], l:resource[1])
-  call s:editBuffer_refreshEditBuffer()
 endfun
 
 " Delete the resource under cursor, after confirmation prompt
@@ -254,24 +265,31 @@ fun! s:viewBuffer_refreshViewBuffer() abort
   setlocal nomodifiable
 endfun
 
+" Configure current buffer with appropriate options and default mappings for view
+fun! s:viewBuffer_prepareBuffer() abort
+  setlocal buftype=nowrite
+  setlocal bufhidden=delete
+  setlocal filetype=kubernetes
+  setlocal noswapfile
+
+  nnoremap <silent><buffer> ii :call <SID>viewBuffer_editResource('edit')<CR>
+  nnoremap <silent><buffer> is :call <SID>viewBuffer_editResource('sp')<CR>
+  nnoremap <silent><buffer> iv :call <SID>viewBuffer_editResource('vs')<CR>
+  nnoremap <silent><buffer> it :call <SID>viewBuffer_editResource('tabe')<CR>
+  nnoremap <silent><buffer> dd :call <SID>viewBuffer_deleteResource()<CR>
+  nnoremap <silent><buffer> gr :call <SID>viewBuffer_refreshViewBuffer()<CR>
+endfun
+
 " Create or switch to view buffer(kube://{resourceType})
 fun! s:openViewBuffer(resourceType) abort
   let existing = bufwinnr('^kube://' . a:resourceType . '$')
   if l:existing ==# -1
     silent! exec 'split kube://' . a:resourceType
-    setlocal buftype=nowrite
-    setlocal bufhidden=delete
-    setlocal filetype=kubernetes
-    setlocal noswapfile
-
-    nnoremap <silent><buffer> ii :call <SID>viewBuffer_editResource('edit')<CR>
-    nnoremap <silent><buffer> is :call <SID>viewBuffer_editResource('sp')<CR>
-    nnoremap <silent><buffer> iv :call <SID>viewBuffer_editResource('vs')<CR>
-    nnoremap <silent><buffer> it :call <SID>viewBuffer_editResource('tabe')<CR>
-    nnoremap <silent><buffer> dd :call <SID>viewBuffer_deleteResource()<CR>
-    nnoremap <silent><buffer> gr :call <SID>viewBuffer_refreshViewBuffer()<CR>
   else
     silent! execute l:existing . 'wincmd w'
+    " refresh needs to be done explicitly because buffer override will not
+    " happen to exising buffers (due to BufReadCmd)
+    call s:viewBuffer_refreshViewBuffer()
   endif
   return winnr()
 endfun
@@ -299,9 +317,7 @@ fun! vimkubectl#openResourceListView(res) abort
   let resourceType = split(resource, '/')[0]
   let namespace = s:getActiveNamespace()
 
-  " TODO: store all state in buffer name (BufWriteCmd)
   call s:openViewBuffer(l:resource)
-  call s:viewBuffer_refreshViewBuffer()
 endfun
 
 " :Kedit
@@ -311,7 +327,6 @@ fun! vimkubectl#editResourceObject(fullResource) abort
   let resource = split(a:fullResource, '/')
   "TODO: provide config option for default open method
   call s:openEditBuffer('split', l:resource[0], l:resource[1])
-  call s:editBuffer_refreshEditBuffer()
 endfun
 
 " :Kapply
@@ -327,6 +342,18 @@ fun! vimkubectl#applyActiveBuffer() range abort
   endif
   echom l:result
   echo 'Successfully applied.'
+endfun
+
+fun! vimkubectl#overrideBuffer() abort
+  let resource = trim(expand('%'), 'kube://', 1)
+  let parsedResource = split(l:resource, '/')
+  if len(parsedResource) ==# 1
+    call s:viewBuffer_prepareBuffer()
+    call s:viewBuffer_refreshViewBuffer()
+  else
+    call s:editBuffer_prepareBuffer()
+    call s:editBuffer_refreshEditBuffer()
+  endif
 endfun
 
 " COMPLETION FUNCTIONS
