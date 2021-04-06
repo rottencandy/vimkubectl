@@ -28,7 +28,7 @@
 " Create command using g:vimkubectl_command
 fun! s:craftCommand(command, namespace) abort
   if !exists('g:vimkubectl_command') || !exists('g:vimkubectl_timeout')
-    s:printWarning('Configuration options not specified.')
+    call s:printWarning('Configuration options not specified.')
     return
   endif
   let specifyNamespace = len(a:namespace) ? '-n ' . a:namespace : ''
@@ -360,9 +360,8 @@ endfun
 " --------------------
 
 " Completion function for namespaces
-fun! vimkubectl#allNamespaces(A, L, P)
-  " Command separated to allow clean detection of exit code
-  let namespaces = system(g:vimkubectl_command . ' get ns -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's')
+fun! vimkubectl#allNamespaces(A, L, P) abort
+  let namespaces = system(s:craftCommand('get ns -o custom-columns=":metadata.name"', ''))
   if v:shell_error !=# 0
     return ''
   endif
@@ -370,8 +369,9 @@ fun! vimkubectl#allNamespaces(A, L, P)
 endfun
 
 " Completion function for resource types only
-fun! vimkubectl#allResources(A, L, P)
-  let availableResources = system(g:vimkubectl_command . ' api-resources -o name --cached --request-timeout=' . g:vimkubectl_timeout . 's --verbs=get | awk -F "." ''{print $1}''')
+fun! vimkubectl#allResources(A, L, P) abort
+  " TODO: Escape from awk dependency
+  let availableResources = system(s:craftCommand('api-resources -o name --cached --verbs=get', '') . ' | awk -F "." ''{print $1}''')
   if v:shell_error !=# 0
     return ''
   endif
@@ -379,11 +379,10 @@ fun! vimkubectl#allResources(A, L, P)
 endfun
 
 " Completion function for resource types and resource objects
-function! vimkubectl#allResourcesAndObjects(arg, line, pos)
-  call s:verifyNamespace()
+function! vimkubectl#allResourcesAndObjects(arg, line, pos) abort
   let arguments = split(a:line, '\s\+')
-  if len(arguments) > 2 || len(arguments) > 1 && a:arg=~ '^\s*$'
-    let objectList = system(g:vimkubectl_command . ' get ' . arguments[1] . ' -o custom-columns=":metadata.name" --request-timeout=' . g:vimkubectl_timeout . 's -n ' . s:currentNamespace)
+  if len(arguments) > 2 || len(arguments) > 1 && a:arg =~# '^\s*$'
+    let objectList = s:craftCommand('get ' . arguments[1] . ' -o custom-columns=":metadata.name" ', s:getActiveNamespace())
   else
     let objectList = vimkubectl#allResources('', '', '')
   endif
