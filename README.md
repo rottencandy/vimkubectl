@@ -3,6 +3,8 @@ Vimkubectl
 
 A (neo)vim plugin that acts as a `kubectl` wrapper providing commands and mappings to manipulate Kubernetes resources.
 
+![Screenshot of plugin in use](https://i.imgur.com/PwDD7pS.png)
+
 The following has been implemented so for:
 - Fetch and view lists of kubernetes resources
 - Edit resource manifests in YAML form
