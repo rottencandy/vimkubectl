@@ -1,27 +1,3 @@
-" Copyright (c) Mohammed Saud
-"
-" MIT License
-"
-" Permission is hereby granted, free of charge, to any person obtaining
-" a copy of this software and associated documentation files (the
-" "Software""), to deal in the Software without restriction, including
-" without limitation the rights to use, copy, modify, merge, publish,
-" distribute, sublicense, and/or sell copies of the Software, and to
-" permit persons to whom the Software is furnished to do so, subject to
-" the following conditions:
-"
-" The above copyright notice and this permission notice shall be
-" included in all copies or substantial portions of the Software.
-"
-" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-" NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-" LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
-
-
 " K8S UTILS
 " ---------
 
@@ -55,8 +31,7 @@ fun! s:applyString(stringData, namespace) abort
   return system(s:craftCommand('apply -f -', a:namespace), a:stringData)
 endfun
 
-" Get currently active namespace context
-" (Taken from kubectl's bash_completion file)
+" Get currently active namespace
 fun! s:fetchActiveNamespace() abort
   return system(s:craftCommand('config view --minify -o ''jsonpath={..namespace}''', ''))
 endfun
@@ -117,7 +92,7 @@ endfun
 " Fetch the manifest of the resource and fill up the buffer,
 " after discarding any existing content
 fun! s:editBuffer_refreshEditBuffer() abort
-  let fullResource = trim(expand('%'), 'kube://', 1)
+  let fullResource = trim(expand('%'), 'kube://')
   let resource = split(l:fullResource, '/')
 
   echo 'Fetching manifest...'
@@ -155,6 +130,7 @@ fun! s:editBuffer_prepareBuffer() abort
   setlocal filetype=yaml
   setlocal noswapfile
 
+  " TODO warn before redrawing with unsaved changes
   nnoremap <silent><buffer> gr :call <SID>editBuffer_refreshEditBuffer()<CR>
   command! -buffer -bar -bang -nargs=? Ksave :call <SID>editBuffer_saveToFile(<q-args>)
 
@@ -166,10 +142,9 @@ endfun
 
 " Create or switch to edit buffer(kube://{resourceType}/{resourceName})
 fun! s:openEditBuffer(openMethod, resourceType, resourceName) abort
+  " TODO verify if openMethod is valid
   let existing = bufwinnr('^kube://' . a:resourceType . '/' . a:resourceName . '$')
   if l:existing ==# -1
-    " TODO verify if openMethod is correct
-    " TODO warn before redrawing with unsaved changes
     silent! exec a:openMethod . ' kube://' . a:resourceType . '/' . a:resourceName
   else
     silent! execute l:existing . 'wincmd w'
@@ -186,7 +161,7 @@ endfun
 " If cursor is on header, or blank space, return ''
 " TODO: range support
 fun! s:viewBuffer_resourceUnderCursor() abort
-  let headerLength = len(s:viewBuffer_headerText('', ''))
+  let headerLength = len(s:viewBuffer_headerText('', 0))
   if getpos('.')[1] <=# l:headerLength
     return ''
   endif
@@ -233,10 +208,10 @@ fun! s:viewBuffer_deleteResource() abort
 endfun
 
 " Create header text to be shown at the top of the buffer
-fun! s:viewBuffer_headerText(namespace, resource) abort
+fun! s:viewBuffer_headerText(resource, resourceCount) abort
   return [
-        \ 'Namespace: ' . a:namespace,
-        \ 'Resource: ' . a:resource,
+        \ 'Namespace: ' . s:getActiveNamespace(),
+        \ 'Resource: ' . a:resource . ' (' . a:resourceCount . ')',
         \ '',
         \ ]
 endfun
@@ -244,7 +219,7 @@ endfun
 " Fetch the resources related to buffer and fill it up,
 " after discarding any existing content
 fun! s:viewBuffer_refreshViewBuffer() abort
-  let resourceType = trim(expand('%'), 'kube://', 1)
+  let resourceType = trim(expand('%'), 'kube://')
   let namespace = s:getActiveNamespace()
 
   echo 'Fetching resources...'
@@ -259,7 +234,7 @@ fun! s:viewBuffer_refreshViewBuffer() abort
 
   setlocal modifiable
   silent! execute '%d'
-  call append(0, s:viewBuffer_headerText(l:namespace, l:resourceType))
+  call append(0, s:viewBuffer_headerText(l:resourceType, len(l:resourceList)))
   call setline('.', l:resourceList)
   call s:resetUndo()
   setlocal nomodifiable
@@ -323,7 +298,6 @@ endfun
 " :Kedit
 " Open an edit buffer with the resource manifest loaded
 fun! vimkubectl#editResourceObject(fullResource) abort
-  "TODO: validate fullResource
   let resource = split(a:fullResource, '/')
   "TODO: provide config option for default open method
   call s:openEditBuffer('split', l:resource[0], l:resource[1])
@@ -345,7 +319,7 @@ fun! vimkubectl#applyActiveBuffer() range abort
 endfun
 
 fun! vimkubectl#overrideBuffer() abort
-  let resource = trim(expand('%'), 'kube://', 1)
+  let resource = trim(expand('%'), 'kube://')
   let parsedResource = split(l:resource, '/')
   if len(parsedResource) ==# 1
     call s:viewBuffer_prepareBuffer()
@@ -369,6 +343,7 @@ fun! vimkubectl#allNamespaces(A, L, P) abort
 endfun
 
 " Completion function for resource types only
+" (Taken from kubectl's bash_completion file)
 fun! vimkubectl#allResources(A, L, P) abort
   " TODO: Escape from awk dependency
   let availableResources = system(s:craftCommand('api-resources -o name --cached --verbs=get', '') . ' | awk -F "." ''{print $1}''')

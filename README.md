@@ -1,30 +1,31 @@
 Vimkubectl
-======
+==========
 
-_Manage any Kubernetes resource from Vim._
+A (neo)vim plugin that acts as a `kubectl` wrapper providing commands and mappings to manipulate Kubernetes resources.
 
-![Screenshot](https://i.imgur.com/etLfz3x.png)
-
-Vimkubectl is a plugin for Vim8.1+ and NeoVim which provides a set of commands and mappings to view and manipulate any valid Kubernetes resource from inside Vim.
-
+The following has been implemented so for:
+- Fetch and view lists of kubernetes resources
+- Edit resource manifests in YAML form
+- Apply any file or buffer to the cluster
+- Switch namespace
+- Delete resources
 
 Installation
 ------------
 
 Use your favourite plugin manager.
 
-Or use Vim8's built-in package support:
+Or use Vim's built-in package support:
 ```sh
 git clone https://github.com/rottencandy/vimkubectl.git ~/.vim/pack/plugins/start/vimkubectl
 ```
 
 Help tag files can be generated inside Vim using `:helptags ALL`.
 
-
 Usage
 -----
 
-Make sure your Kubernetes cluster is reachable and configured using `kubectl` or a similar command.(see [configuration](#configuration))
+This plugin assumes your Kubernetes cluster is reachable and logged in with `kubectl` or `oc`.(see [configuration](#configuration))
 
 - `:Kget {resource}`
 
@@ -68,22 +69,29 @@ Make sure your Kubernetes cluster is reachable and configured using `kubectl` or
   Can be used on any open buffer.
 
 Configuration
-------------
+-------------
 
-If your `kubectl` command is under a different name, or you are using an alternate command, it can be specified with `g:vimkubectl_command`.
+- `g:vimkubectl_command`
 
-For example to specify OpenShift's `oc` as the command, add this to your `vimrc`:
-```
-let g:vimkubectl_command = 'oc'
-```
+  **Default: 'kubectl'**
 
-The maximum wait time, or the amount of time to wait for the cluster to return, can be specified with `g:vimkubectl_timeout`. The default timeout limit is `5` seconds.
+  If you are using an alternate Kubernetes cli, it can be specified with `g:vimkubectl_command`.
 
-For example, to change the wait time to `10` seconds:
-```
-let g:vimkubectl_timeout = 10
-```
+  For example to use OpenShift's `oc` as the command, add this to your `vimrc`:
+  ```
+  let g:vimkubectl_command = 'oc'
+  ```
 
+- `g:vimkubectl_timeout`
+
+  **Default: 5**
+
+  The maximum time to wait for the cluster to respond to requests.
+
+  For example, to change the wait time to `10` seconds:
+  ```
+  let g:vimkubectl_timeout = 10
+  ```
 
 License
 -------
