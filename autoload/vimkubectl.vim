@@ -92,7 +92,7 @@ endfun
 " Fetch the manifest of the resource and fill up the buffer,
 " after discarding any existing content
 fun! s:editBuffer_refreshEditBuffer() abort
-  let fullResource = trim(expand('%'), 'kube://')
+  let fullResource = substitute(expand('%'), '^kube://', '', '')
   let resource = split(l:fullResource, '/')
 
   echo 'Fetching manifest...'
@@ -117,7 +117,7 @@ fun! s:editBuffer_applyBuffer() range abort
     call s:printWarning(l:result)
     return
   endif
-  echom l:result
+  echom trim(l:result)
   echo 'Successful. Updating manifest...'
   call s:editBuffer_refreshEditBuffer()
   echom 'Updated manifest'
@@ -203,7 +203,7 @@ fun! s:viewBuffer_deleteResource() abort
     call s:printWarning(l:result)
   else
     call s:viewBuffer_refreshViewBuffer()
-    echom l:result
+    echom trim(l:result)
   endif
 endfun
 
@@ -219,7 +219,7 @@ endfun
 " Fetch the resources related to buffer and fill it up,
 " after discarding any existing content
 fun! s:viewBuffer_refreshViewBuffer() abort
-  let resourceType = trim(expand('%'), 'kube://')
+  let resourceType = substitute(expand('%'), '^kube://', '', '')
   let namespace = s:getActiveNamespace()
 
   echo 'Fetching resources...'
@@ -314,12 +314,12 @@ fun! vimkubectl#applyActiveBuffer() range abort
     call s:printWarning(l:result)
     return
   endif
-  echom l:result
+  echom trim(l:result)
   echo 'Successfully applied.'
 endfun
 
 fun! vimkubectl#overrideBuffer() abort
-  let resource = trim(expand('%'), 'kube://')
+  let resource = substitute(expand('%'), '^kube://', '', '')
   let parsedResource = split(l:resource, '/')
   if len(parsedResource) ==# 1
     call s:viewBuffer_prepareBuffer()
