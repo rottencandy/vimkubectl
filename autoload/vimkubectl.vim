@@ -3,12 +3,8 @@
 
 " Create command using g:vimkubectl_command
 fun! s:craftCommand(command, namespace) abort
-  if !exists('g:vimkubectl_command') || !exists('g:vimkubectl_timeout')
-    call s:printWarning('Configuration options not specified.')
-    return
-  endif
   let specifyNamespace = len(a:namespace) ? '-n ' . a:namespace : ''
-  return g:vimkubectl_command . ' ' . a:command . ' ' . l:specifyNamespace . ' --request-timeout=' . g:vimkubectl_timeout . 's'
+  return get(g:, 'vimkubectl_command', 'kubectl') . ' ' . a:command . ' ' . l:specifyNamespace . ' --request-timeout=' . get(g:, 'vimkubectl_timeout', 5) . 's'
 endfun
 
 " Fetch list of `resourceType` resources
@@ -43,10 +39,13 @@ endfun
 " Clear all undo history
 " Source: https://vi.stackexchange.com/a/16915/22360
 fun! s:resetUndo() abort
-  let old_undo = &undolevels
-  set undolevels=-1
-  silent! exec "normal a \<BS>\<Esc>"
-  let &undolevels = old_undo
+  try
+    let undo_setting = &undolevels
+    set undolevels=-1
+    silent! exec "normal a \<BS>\<Esc>"
+  finally
+    let &undolevels = undo_setting
+  endtry
 endfun
 
 " TODO: find a way to store namespace state somewhere else
