@@ -1,5 +1,6 @@
 Vimkubectl
 ==========
+[![CI badge](https://github.com/rottencandy/vimkubectl/actions/workflows/vint.yml/badge.svg)](https://github.com/rottencandy/vimkubectl/actions/workflows/vint.yml)
 
 A (neo)vim plugin that acts as a `kubectl` wrapper providing commands and mappings to manipulate Kubernetes resources.
 
