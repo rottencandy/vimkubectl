@@ -136,6 +136,7 @@ fun! s:viewBuffer_headerText(resource, resourceCount) abort
   return [
         \ 'Namespace: ' . vimkubectl#util#getActiveNamespace(),
         \ 'Resource: ' . a:resource . ' (' . a:resourceCount . ')',
+        \ 'Help: g?',
         \ '',
         \ ]
 endfun
@@ -171,6 +172,7 @@ fun! s:viewBuffer_prepareBuffer() abort
   setlocal filetype=kubernetes
   setlocal noswapfile
 
+  nnoremap <silent><buffer> g? :help vimkubectl-mapping<CR>
   nnoremap <silent><buffer> ii :call <SID>viewBuffer_editResource('edit')<CR>
   nnoremap <silent><buffer> is :call <SID>viewBuffer_editResource('sp')<CR>
   nnoremap <silent><buffer> iv :call <SID>viewBuffer_editResource('vs')<CR>
@@ -291,4 +293,4 @@ function! vimkubectl#allResourcesAndObjects(arg, line, pos) abort
   return l:objectList
 endfunction
 
-" vim: ts:et:sw=2:sts=2:
+" vim: et:sw=2:sts=2:

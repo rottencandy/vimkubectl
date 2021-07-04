@@ -2,7 +2,7 @@ if exists('b:current_syntax')
   finish
 endif
 
-syn match kubernetesHeader '\v^[A-Z][a-z][^:]*: [a-z 0-9 ()]*$' skipwhite contains=kubernetesIdentifier
+syn match kubernetesHeader '\v^[A-Z][a-z][^:]*: .*$' skipwhite contains=kubernetesIdentifier
 syn match kubernetesResource '\v^[a-z \.]*\/[a-z \- 0-9]*$' skipwhite contains=kubernetesResourcePrefix
 
 syn match kubernetesIdentifier '\v [a-z 0-9 ()]*$' contained
@@ -15,4 +15,4 @@ hi def link kubernetesResource Identifier
 
 let b:current_syntax = 'vimkubectl'
 
-" vim: ts:et:sw=2:sts=2:
+" vim: et:sw=2:sts=2:
