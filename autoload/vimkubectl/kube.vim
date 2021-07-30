@@ -28,3 +28,5 @@ endfun
 fun! vimkubectl#kube#fetchActiveNamespace() abort
   return system(vimkubectl#kube#craftCommand('config view --minify -o ''jsonpath={..namespace}''', ''))
 endfun
+
+" vim: et:sw=2:sts=2:

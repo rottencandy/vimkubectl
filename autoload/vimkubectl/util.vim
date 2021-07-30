@@ -37,3 +37,5 @@ fun! vimkubectl#util#applyActiveBuffer(startLine, endLine) abort
   let manifest = getline(a:startLine, a:endLine)
   return vimkubectl#kube#applyString(l:manifest, vimkubectl#util#getActiveNamespace())
 endfun
+
+" vim: et:sw=2:sts=2:

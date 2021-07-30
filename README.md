@@ -6,7 +6,7 @@ A (neo)vim plugin that acts as a `kubectl` wrapper providing commands and mappin
 
 ![Screenshot of plugin in use](https://i.imgur.com/PwDD7pS.png)
 
-The following has been implemented so for:
+The following has been implemented so far:
 - Fetch and view lists of kubernetes resources
 - Edit resource manifests in YAML form
 - Apply any file or buffer to the cluster

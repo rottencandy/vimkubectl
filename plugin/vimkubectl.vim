@@ -12,3 +12,5 @@ augroup vimkubectl_internal
   autocmd! *
   autocmd BufReadCmd kube://* nested call vimkubectl#overrideBuffer()
 augroup END
+
+" vim: et:sw=2:sts=2:
