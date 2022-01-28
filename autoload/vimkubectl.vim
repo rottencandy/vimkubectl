@@ -215,8 +215,6 @@ endfun
 " If `res` is not provided, 'pods' is assumed.
 fun! vimkubectl#openResourceListView(res) abort
   let resource = len(a:res) ? split(a:res)[0] : 'pods'
-  let resourceType = split(resource, '/')[0]
-  let namespace = vimkubectl#util#getActiveNamespace()
 
   call s:openViewBuffer(l:resource)
 endfun
