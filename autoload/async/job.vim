@@ -24,8 +24,8 @@
 "   SOFTWARE.
 " }}}
 
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 
 let s:jobidseq = 0
 let s:jobs = {} " { job, opts, type: 'vimjob|nvimjob'}
@@ -402,5 +402,5 @@ function! async#job#connect(addr, opts) abort
 endfunction
 " }}}
 
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 unlet s:save_cpo
