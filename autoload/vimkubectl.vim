@@ -10,7 +10,7 @@ fun! s:editBuffer_saveToFile(name) abort
   endif
   let manifest = getline('1', '$')
   call writefile(l:manifest, l:fileName)
-  echom 'Saved to ' . l:fileName
+  call vimkubectl#util#printMessage('Saved to ' . l:fileName)
 endfun
 
 " Fetch the manifest of the resource and fill up the buffer,
@@ -19,10 +19,9 @@ fun! s:editBuffer_refreshEditBuffer() abort
   let fullResource = substitute(expand('%'), '^kube://', '', '')
   let resource = split(l:fullResource, '/')
 
-  echo 'Fetching manifest...'
+  call vimkubectl#util#showMessage('Fetching manifest...')
   let updatedManifest = vimkubectl#kube#fetchResourceManifest(l:resource[0], l:resource[1], vimkubectl#util#getActiveNamespace())
-  echon "\r\r"
-  echon ''
+  call vimkubectl#util#clearCmdLine()
   if v:shell_error !=# 0
     call vimkubectl#util#printWarning(join(l:updatedManifest, "\n"))
     return
@@ -35,16 +34,16 @@ endfun
 
 " Apply the buffer contents
 fun! s:editBuffer_applyBuffer() range abort
-  echo 'Applying resource...'
+  call vimkubectl#util#showMessage('Applying resource...')
   silent let result = vimkubectl#util#applyActiveBuffer(a:firstline, a:lastline)
   if v:shell_error !=# 0
     call vimkubectl#util#printWarning(l:result)
     return
   endif
-  echom trim(l:result)
-  echo 'Successful. Updating manifest...'
+  call vimkubectl#util#printMessage(trim(l:result))
+  call vimkubectl#util#showMessage('Successful. Updating manifest...')
   call s:editBuffer_refreshEditBuffer()
-  echom 'Updated manifest'
+  call vimkubectl#util#printMessage('Updated manifest')
 endfun
 
 " Configure current buffer with appropriate options and default mappings for edit
@@ -121,13 +120,13 @@ fun! s:viewBuffer_deleteResource() abort
     return
   endif
 
-  echo 'Deleting...'
+  call vimkubectl#util#showMessage('Deleting...')
   let result = vimkubectl#kube#deleteResource(l:resource[0], l:resource[1], vimkubectl#util#getActiveNamespace())
   if v:shell_error !=# 0
     call vimkubectl#util#printWarning(l:result)
   else
     call s:viewBuffer_refreshViewBuffer()
-    echom trim(l:result)
+    call vimkubectl#util#printMessage(trim(l:result))
   endif
 endfun
 
@@ -147,10 +146,9 @@ fun! s:viewBuffer_refreshViewBuffer() abort
   let resourceType = substitute(expand('%'), '^kube://', '', '')
   let namespace = vimkubectl#util#getActiveNamespace()
 
-  echo 'Fetching resources...'
+  call vimkubectl#util#showMessage('Fetching resources...')
   let resourceList = vimkubectl#kube#fetchResourceList(l:resourceType, l:namespace)
-  echon "\r\r"
-  echon ''
+  call vimkubectl#util#clearCmdLine()
   if v:shell_error != 0
     call vimkubectl#util#printWarning(join(l:resourceList, "\n"))
     " TODO: close buffer if already empty
@@ -207,7 +205,7 @@ fun! vimkubectl#switchOrShowNamespace(name) abort
     call vimkubectl#util#setActiveNamespace(a:name)
   endif
   " TODO: update any existing view buffers to use new namespace
-  echom 'Using namespace: ' . vimkubectl#util#getActiveNamespace()
+  call vimkubectl#util#printMessage('Using namespace: ' . vimkubectl#util#getactivenamespace())
 endfun
 
 " :Kget
@@ -232,17 +230,17 @@ endfun
 " If range is used, apply only the selected section,
 " else apply entire buffer
 fun! vimkubectl#applyActiveBuffer() range abort
-  echo 'Applying resource...'
+  call vimkubectl#util#showMessage('Applying resource...')
   silent let result = vimkubectl#util#applyActiveBuffer(a:firstline, a:lastline)
   if v:shell_error !=# 0
     call vimkubectl#util#printWarning(l:result)
     return
   endif
-  echom trim(l:result)
-  echo 'Successfully applied.'
+  call vimkubectl#util#printMessage(trim(l:result))
+  call vimkubectl#util#showMessage('Successfully applied.')
 endfun
 
-fun! vimkubectl#overrideBuffer() abort
+fun! vimkubectl#hijackBuffer() abort
   let resource = substitute(expand('%'), '^kube://', '', '')
   let parsedResource = split(l:resource, '/')
   if len(parsedResource) ==# 1

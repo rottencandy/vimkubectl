@@ -27,9 +27,26 @@ fun! vimkubectl#util#setActiveNamespace(namespace) abort
   let s:currentNamespace = a:namespace
 endfun
 
-" Print a message with warning highlight
+" Print a message to cmdline
+fun! vimkubectl#util#showMessage(message) abort
+  echom '[Vimkubectl] ' . a:message
+endfun
+
+" Print a message to cmdline, and save to :messages history
+fun! vimkubectl#util#printMessage(message) abort
+  echom '[Vimkubectl] ' . a:message
+endfun
+
+" Print a message with warning highlight, and save to :messages history
 fun! vimkubectl#util#printWarning(message) abort
-  echohl WarningMsg | echom '[Vimkubectl] Error: ' . a:message | echohl None
+  echohl WarningMsg | echom '[Vimkubectl] ' . a:message | echohl None
+endfun
+
+" Clear the cmd line
+" https://stackoverflow.com/a/33854736/7683374
+fun! vimkubectl#util#clearCmdLine() abort
+  echon "\r\r"
+  echon ''
 endfun
 
 " Apply the contents of the active buffer,
