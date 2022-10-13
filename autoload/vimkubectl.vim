@@ -205,7 +205,7 @@ fun! vimkubectl#switchOrShowNamespace(name) abort
     call vimkubectl#util#setActiveNamespace(a:name)
   endif
   " TODO: update any existing view buffers to use new namespace
-  call vimkubectl#util#printMessage('Using namespace: ' . vimkubectl#util#getactivenamespace())
+  call vimkubectl#util#printMessage('Using namespace: ' . vimkubectl#util#getActiveNamespace())
 endfun
 
 " :Kget
