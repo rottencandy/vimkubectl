@@ -220,6 +220,7 @@ endfun
 " :Kedit
 " Open an edit buffer with the resource manifest loaded
 fun! vimkubectl#editResourceObject(fullResource) abort
+  " TODO: make this work even with spaces instead of /
   let resource = split(a:fullResource, '/')
   "TODO: provide config option for default open method
   call s:openEditBuffer('split', l:resource[0], l:resource[1])
@@ -257,7 +258,7 @@ endfun
 
 " Completion function for namespaces
 fun! vimkubectl#allNamespaces(A, L, P) abort
-  let namespaces = system(vimkubectl#kube#craftCommand('get ns -o custom-columns=":metadata.name"', ''))
+  let namespaces = vimkubectl#kube#fetchNamespaces()
   if v:shell_error !=# 0
     return ''
   endif
@@ -265,10 +266,8 @@ fun! vimkubectl#allNamespaces(A, L, P) abort
 endfun
 
 " Completion function for resource types only
-" (Taken from kubectl's bash_completion file)
 fun! vimkubectl#allResources(A, L, P) abort
-  " TODO: Escape from awk dependency
-  let availableResources = system(vimkubectl#kube#craftCommand('api-resources -o name --cached --verbs=get', '') . ' | awk -F "." ''{print $1}''')
+  let availableResources = vimkubectl#kube#fetchResourceTypes()
   if v:shell_error !=# 0
     return ''
   endif
@@ -279,9 +278,9 @@ endfun
 function! vimkubectl#allResourcesAndObjects(arg, line, pos) abort
   let arguments = split(a:line, '\s\+')
   if len(arguments) > 2 || len(arguments) > 1 && a:arg =~# '^\s*$'
-    let objectList = system(vimkubectl#kube#craftCommand('get ' . arguments[1] . ' -o custom-columns=":metadata.name" ', vimkubectl#util#getActiveNamespace()))
+    let objectList = vimkubectl#kube#fetchPureResourceList(arguments[1], vimkubectl#util#getActiveNamespace())
   else
-    let objectList = vimkubectl#allResources('', '', '')
+    let objectList = vimkubectl#kube#fetchResourceTypes()
   endif
   if v:shell_error !=# 0
     return ''
