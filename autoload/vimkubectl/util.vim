@@ -1,5 +1,6 @@
 " UTILS
 " -----
+const s:msgPrefix = '[Vimkubectl] '
 
 " Clear all undo history
 " Source: https://vi.stackexchange.com/a/16915/22360
@@ -29,17 +30,17 @@ endfun
 
 " Print a message to cmdline
 fun! vimkubectl#util#showMessage(message) abort
-  echom '[Vimkubectl] ' . a:message
+  echom s:msgPrefix . a:message
 endfun
 
 " Print a message to cmdline, and save to :messages history
 fun! vimkubectl#util#printMessage(message) abort
-  echom '[Vimkubectl] ' . a:message
+  echom s:msgPrefix . a:message
 endfun
 
 " Print a message with warning highlight, and save to :messages history
 fun! vimkubectl#util#printWarning(message) abort
-  echohl WarningMsg | echom '[Vimkubectl] ' . a:message | echohl None
+  echohl WarningMsg | echom s:msgPrefix . a:message | echohl None
 endfun
 
 " Print a message with error highlight, and save to :messages history
