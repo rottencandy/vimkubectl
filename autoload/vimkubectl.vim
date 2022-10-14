@@ -202,10 +202,11 @@ endfun
 " Else print currently active namespace.
 fun! vimkubectl#switchOrShowNamespace(name) abort
   if len(a:name)
-    call vimkubectl#kube#setActiveNamespace(a:name)
+    call vimkubectl#kube#setNs(a:name, { -> vimkubectl#util#printMessage('Switched to ' . a:name) })
+  else
+    " TODO: update any existing view buffers to use new namespace
+    call vimkubectl#util#printMessage('Active NS: ' . vimkubectl#kube#fetchActiveNamespace())
   endif
-  " TODO: update any existing view buffers to use new namespace
-  call vimkubectl#util#printMessage('Active NS: ' . vimkubectl#kube#fetchActiveNamespace())
 endfun
 
 " :Kget

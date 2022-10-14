@@ -24,6 +24,10 @@ fun! s:craftCmd(command, namespace = '') abort
   return join([get(g:, 'vimkubectl_command', 'kubectl'), a:command, l:nsFlag, l:timeoutFlag])
 endfun
 
+fun! s:asyncCmd(command) abort
+  return ['bash', '-c', a:command]
+endfun
+
 " Fetch list of all namespaces
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchNamespaces() abort
@@ -71,8 +75,16 @@ fun! vimkubectl#kube#fetchActiveNamespace() abort
 endfun
 
 " Set active namespace for current context
-fun! vimkubectl#kube#setActiveNamespace(ns) abort
-  return system(s:craftCommand('config set-context --current --namespace=' . a:ns))
+" This function is blocking
+fun! vimkubectl#kube#setNsSync(ns) abort
+  const l:fetchNsCmd = s:craftCmd('config set-context --current --namespace=' . a:ns)
+  call system(l:fetchNsCmd)
+endfun
+
+" Same as above but async
+fun! vimkubectl#kube#setNs(ns, onSet) abort
+  const l:fetchNsCmd = s:craftCmd('config set-context --current --namespace=' . a:ns)
+  call s:asyncRun(s:asyncCmd(l:fetchNsCmd), a:onSet)
 endfun
 
 " vim: et:sw=2:sts=2:
