@@ -42,6 +42,11 @@ fun! vimkubectl#util#printWarning(message) abort
   echohl WarningMsg | echom '[Vimkubectl] ' . a:message | echohl None
 endfun
 
+" Print a message with error highlight, and save to :messages history
+fun! vimkubectl#util#printError(message) abort
+  echohl ErrorMsg | echom '[Vimkubectl] ' . a:message | echohl None
+endfun
+
 " Clear the cmd line
 " https://stackoverflow.com/a/33854736/7683374
 fun! vimkubectl#util#clearCmdLine() abort
