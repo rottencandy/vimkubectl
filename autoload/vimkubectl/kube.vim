@@ -1,3 +1,22 @@
+" Wrapper over async.vim https://github.com/prabirshrestha/async.vim
+" Run the `cmd` asynchronously, and call `callback` everytime STDOUT is
+" written to(Does not run when STDOUT is empty).
+" `output` defines the data type, either 'string'(default), 'array' or 'raw'
+" 'string' is noop in vim, 'array' is noop in nvim
+" 'raw' will mean array for nvim and string for vim
+fun! s:asyncRun(cmd, callback, output = 'string') abort
+  let HandleOut = { jobId, data, event -> len(data) ? a:callback(data) : 0 }
+  let HandleErr = { jobId, data, event -> len(data) ? vimkubectl#util#printError(data) : 0 }
+  let HandleExit = { -> 0 }
+
+  call async#job#start(a:cmd, {
+        \ 'on_stdout': l:HandleOut,
+        \ 'on_stderr': l:HandleErr,
+        \ 'on_exit': l:HandleExit,
+        \ 'normalize': a:output
+        \ })
+endfun
+
 " Create command using g:vimkubectl_command
 fun! s:craftCommand(command, namespace = '') abort
   let nsFlag = len(a:namespace) ? '-n ' . a:namespace : ''
