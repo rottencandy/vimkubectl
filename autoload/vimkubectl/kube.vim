@@ -70,4 +70,9 @@ fun! vimkubectl#kube#fetchActiveNamespace() abort
   return system(s:craftCommand('config view --minify -o ''jsonpath={..namespace}'''))
 endfun
 
+" Set active namespace for current context
+fun! vimkubectl#kube#setActiveNamespace(ns) abort
+  return system(s:craftCommand('config set-context --current --namespace=' . a:ns))
+endfun
+
 " vim: et:sw=2:sts=2:

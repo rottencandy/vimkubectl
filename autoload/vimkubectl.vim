@@ -20,7 +20,7 @@ fun! s:editBuffer_refreshEditBuffer() abort
   let resource = split(l:fullResource, '/')
 
   call vimkubectl#util#showMessage('Fetching manifest...')
-  let updatedManifest = vimkubectl#kube#fetchResourceManifest(l:resource[0], l:resource[1], vimkubectl#util#getActiveNamespace())
+  let updatedManifest = vimkubectl#kube#fetchResourceManifest(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace())
   call vimkubectl#util#clearCmdLine()
   if v:shell_error !=# 0
     call vimkubectl#util#printWarning(join(l:updatedManifest, "\n"))
@@ -121,7 +121,7 @@ fun! s:viewBuffer_deleteResource() abort
   endif
 
   call vimkubectl#util#showMessage('Deleting...')
-  let result = vimkubectl#kube#deleteResource(l:resource[0], l:resource[1], vimkubectl#util#getActiveNamespace())
+  let result = vimkubectl#kube#deleteResource(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace())
   if v:shell_error !=# 0
     call vimkubectl#util#printWarning(l:result)
   else
@@ -133,7 +133,7 @@ endfun
 " Create header text to be shown at the top of the buffer
 fun! s:viewBuffer_headerText(resource, resourceCount) abort
   return [
-        \ 'Namespace: ' . vimkubectl#util#getActiveNamespace(),
+        \ 'Namespace: ' . vimkubectl#kube#fetchActiveNamespace(),
         \ 'Resource: ' . a:resource . ' (' . a:resourceCount . ')',
         \ 'Help: g?',
         \ '',
@@ -144,7 +144,7 @@ endfun
 " after discarding any existing content
 fun! s:viewBuffer_refreshViewBuffer() abort
   let resourceType = substitute(expand('%'), '^kube://', '', '')
-  let namespace = vimkubectl#util#getActiveNamespace()
+  let namespace = vimkubectl#kube#fetchActiveNamespace()
 
   call vimkubectl#util#showMessage('Fetching resources...')
   let resourceList = vimkubectl#kube#fetchResourceList(l:resourceType, l:namespace)
@@ -202,10 +202,10 @@ endfun
 " Else print currently active namespace.
 fun! vimkubectl#switchOrShowNamespace(name) abort
   if len(a:name)
-    call vimkubectl#util#setActiveNamespace(a:name)
+    call vimkubectl#kube#setActiveNamespace(a:name)
   endif
   " TODO: update any existing view buffers to use new namespace
-  call vimkubectl#util#printMessage('Using namespace: ' . vimkubectl#util#getActiveNamespace())
+  call vimkubectl#util#printMessage('Active NS: ' . vimkubectl#kube#fetchActiveNamespace())
 endfun
 
 " :Kget
@@ -278,7 +278,7 @@ endfun
 function! vimkubectl#allResourcesAndObjects(arg, line, pos) abort
   let arguments = split(a:line, '\s\+')
   if len(arguments) > 2 || len(arguments) > 1 && a:arg =~# '^\s*$'
-    let objectList = vimkubectl#kube#fetchPureResourceList(arguments[1], vimkubectl#util#getActiveNamespace())
+    let objectList = vimkubectl#kube#fetchPureResourceList(arguments[1], vimkubectl#kube#fetchActiveNamespace())
   else
     let objectList = vimkubectl#kube#fetchResourceTypes()
   endif
