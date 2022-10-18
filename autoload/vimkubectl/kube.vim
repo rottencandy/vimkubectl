@@ -1,22 +1,3 @@
-" Wrapper over async.vim https://github.com/prabirshrestha/async.vim
-" Run the `cmd` asynchronously, and call `callback` everytime STDOUT is
-" written to(Does not run when STDOUT is empty).
-" `output` defines the data type, either 'string'(default), 'array' or 'raw'
-" 'string' is noop in vim, 'array' is noop in nvim
-" 'raw' will mean array for nvim and string for vim
-fun! s:asyncRun(cmd, callback, output = 'string') abort
-  let HandleOut = { jobId, data, event -> len(data) ? a:callback(data) : 0 }
-  let HandleErr = { jobId, data, event -> len(data) ? vimkubectl#util#printError(data) : 0 }
-  let HandleExit = { -> 0 }
-
-  call async#job#start(a:cmd, {
-        \ 'on_stdout': l:HandleOut,
-        \ 'on_stderr': l:HandleErr,
-        \ 'on_exit': l:HandleExit,
-        \ 'normalize': a:output
-        \ })
-endfun
-
 " Create command using g:vimkubectl_command
 fun! s:craftCmd(command, namespace = '') abort
   let nsFlag = len(a:namespace) ? '-n ' . a:namespace : ''
@@ -59,11 +40,6 @@ fun! vimkubectl#kube#fetchResourceManifest(resourceType, resource, namespace) ab
   return systemlist(s:craftCmd(join(['get', a:resourceType, a:resource, '-o yaml']), a:namespace))
 endfun
 
-" Delete resource
-fun! vimkubectl#kube#deleteResource(resourceType, resource, namespace) abort
-  return system(s:craftCmd(join(['delete', a:resourceType, a:resource]), a:namespace))
-endfun
-
 " Apply string
 fun! vimkubectl#kube#applyString(stringData, namespace) abort
   return system(s:craftCmd('apply -f -', a:namespace), a:stringData)
@@ -74,17 +50,23 @@ fun! vimkubectl#kube#fetchActiveNamespace() abort
   return system(s:craftCmd('config view --minify -o ''jsonpath={..namespace}'''))
 endfun
 
-" Set active namespace for current context
-" This function is blocking
-fun! vimkubectl#kube#setNsSync(ns) abort
-  const l:fetchNsCmd = s:craftCmd('config set-context --current --namespace=' . a:ns)
-  call system(l:fetchNsCmd)
+" Delete resource
+fun! vimkubectl#kube#deleteResource(resType, res, ns, onDel) abort
+  let cmd = s:craftCmd(join(['delete', a:resType, a:res]), a:ns)
+  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onDel)
 endfun
 
-" Same as above but async
+" Set active namespace for current context
 fun! vimkubectl#kube#setNs(ns, onSet) abort
-  const l:fetchNsCmd = s:craftCmd('config set-context --current --namespace=' . a:ns)
-  call s:asyncRun(s:asyncCmd(l:fetchNsCmd), a:onSet)
+  const cmd = s:craftCmd('config set-context --current --namespace=' . a:ns)
+  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onSet)
+endfun
+
+" Fetch list of resources of a given type
+" returns array of `resourceType/resourceName`
+fun! vimkubectl#kube#fetchResourceList2(resourceType, namespace, callback, ctx = {}) abort
+  const cmd = s:craftCmd(join(['get', a:resourceType, '-o name']), a:namespace)
+  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback, 'array', a:ctx)
 endfun
 
 " vim: et:sw=2:sts=2:

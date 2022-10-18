@@ -4,7 +4,7 @@ const s:msgPrefix = '[Vimkubectl] '
 
 " Clear all undo history
 " Source: https://vi.stackexchange.com/a/16915/22360
-fun! vimkubectl#util#resetUndo() abort
+fun! vimkubectl#util#resetUndo(bufnr) abort
   try
     let undo_setting = &undolevels
     set undolevels=-1
@@ -15,22 +15,22 @@ fun! vimkubectl#util#resetUndo() abort
 endfun
 
 " Print a message to cmdline
-fun! vimkubectl#util#showMessage(message) abort
-  echom s:msgPrefix . a:message
+fun! vimkubectl#util#showMessage(message = '') abort
+  echo s:msgPrefix . a:message
 endfun
 
 " Print a message to cmdline, and save to :messages history
-fun! vimkubectl#util#printMessage(message) abort
+fun! vimkubectl#util#printMessage(message = '') abort
   echom s:msgPrefix . a:message
 endfun
 
 " Print a message with warning highlight, and save to :messages history
-fun! vimkubectl#util#printWarning(message) abort
+fun! vimkubectl#util#printWarning(message = '') abort
   echohl WarningMsg | echom s:msgPrefix . a:message | echohl None
 endfun
 
 " Print a message with error highlight, and save to :messages history
-fun! vimkubectl#util#printError(message) abort
+fun! vimkubectl#util#printError(message = '') abort
   echohl ErrorMsg | echom s:msgPrefix . a:message | echohl None
 endfun
 
@@ -45,6 +45,43 @@ endfun
 fun! vimkubectl#util#applyActiveBuffer(startLine, endLine) abort
   let manifest = getline(a:startLine, a:endLine)
   return vimkubectl#kube#applyString(l:manifest, vimkubectl#kube#fetchActiveNamespace())
+endfun
+
+" Save buffer file contents to local file
+" saves as `resourceType_resource.yaml` if name is not given
+fun! vimkubectl#util#saveToFile(fname = '') abort
+  let fileName = a:fname
+  if !len(a:fname)
+    let l:fileName = substitute(expand('%'), '\v\/', '_', '') . '.yaml'
+  endif
+  let manifest = getline('1', '$')
+  call writefile(l:manifest, l:fileName)
+  call vimkubectl#util#printMessage('Saved to ' . l:fileName)
+endfun
+
+" Wrapper over async.vim https://github.com/prabirshrestha/async.vim
+" Run the `cmd` asynchronously, and call `callback` everytime STDOUT is
+" written to(Does not run when STDOUT is empty).
+" `output` defines the data type, either 'string'(default), 'array' or 'raw'
+" 'string' is noop in vim, 'array' is noop in nvim
+" 'raw' will mean array for nvim and string for vim
+fun! vimkubectl#util#asyncRun(cmd, callback, output = 'string', ctx = {}) abort
+  let HandleOut = { jobId, data, event -> len(data) ? a:callback(data, a:ctx) : 0 }
+  let HandleErr = { -> 0 }
+  let HandleExit = { -> 0 }
+
+  return async#job#start(a:cmd, {
+        \ 'on_stdout': l:HandleOut,
+        \ 'on_stderr': l:HandleErr,
+        \ 'on_exit': l:HandleExit,
+        \ 'normalize': a:output
+        \ })
+endfun
+
+fun! vimkubectl#util#asyncLoop(callback, interval = 5, ctx = {}) abort
+  call a:callback()
+  const cmd = ['bash', '-c', 'while true; do sleep ' . a:interval . ' && echo 1; done']
+  return vimkubectl#util#asyncRun(l:cmd, a:callback, 'string', a:ctx)
 endfun
 
 " vim: et:sw=2:sts=2:

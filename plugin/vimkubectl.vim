@@ -11,6 +11,7 @@ command -bar -bang -nargs=0 -range=% Kapply <line1>,<line2>call vimkubectl#apply
 augroup vimkubectl_internal
   autocmd! *
   autocmd BufReadCmd kube://* nested call vimkubectl#hijackBuffer()
+  autocmd BufDelete kube://* nested call vimkubectl#cleanupBuffer(expand('<abuf>'))
 augroup END
 
 " vim: et:sw=2:sts=2:
