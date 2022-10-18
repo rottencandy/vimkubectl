@@ -2,7 +2,9 @@ Vimkubectl
 ==========
 [![CI badge](https://github.com/rottencandy/vimkubectl/actions/workflows/vint.yml/badge.svg)](https://github.com/rottencandy/vimkubectl/actions/workflows/vint.yml)
 
-A (neo)vim plugin that acts as a `kubectl` wrapper providing commands and mappings to manipulate Kubernetes resources.
+A Vim/Neovim plugin to manipulate Kubernetes resources.
+
+This plugin acts as a `kubectl` wrapper providing commands and mappings to perform basic actions Kubernetes resources.
 
 ![Screenshot of plugin in use](https://i.imgur.com/PwDD7pS.png)
 
@@ -16,14 +18,16 @@ The following has been implemented so far:
 Installation
 ------------
 
-Use your favourite plugin manager.
+This plugin follows the standard runtime path structure,
+you can install it with your favourite plugin manager.
 
-Or use Vim's built-in package support:
-```sh
-git clone https://github.com/rottencandy/vimkubectl.git ~/.vim/pack/plugins/start/vimkubectl
-```
-
-Help tag files can be generated inside Vim using `:helptags ALL`.
+Plugin Manager  | Instructions
+--------------- | --------------------------------------------------
+[NeoBundle][0] | `NeoBundle 'rottencandy/vimkubectl'`
+[Vundle][1]    | `Plugin 'rottencandy/vimkubectl'`
+[Plug][2]      | `Plug 'rottencandy/vimkubectl'`
+[Pathogen][3]  | `git clone https://github.com/rottencandy/vimkubectl ~/.vim/bundle`
+Manual          | Copy all of the files into your `~/.vim` directory
 
 Usage
 -----
@@ -99,4 +103,9 @@ Configuration
 License
 -------
 
-MIT
+Licensed under the [MIT License](LICENSE.txt).
+
+[0]: https://github.com/Shougo/neobundle.vim
+[1]: https://github.com/gmarik/vundle
+[2]: https://github.com/junegunn/vim-plug
+[3]: https://github.com/tpope/vim-pathogen
