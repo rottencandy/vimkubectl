@@ -7,6 +7,7 @@ command -bar -bang -complete=custom,vimkubectl#allResources -nargs=? Kget call v
 command -bar -bang -complete=custom,vimkubectl#allNamespaces -nargs=? Knamespace call vimkubectl#switchOrShowNamespace(<q-args>)
 command -bar -bang -complete=custom,vimkubectl#allResourcesAndObjects -nargs=+ Kedit call vimkubectl#editResourceObject(<q-args>)
 command -bar -bang -nargs=0 -range=% Kapply <line1>,<line2>call vimkubectl#applyActiveBuffer()
+command -bar -nargs=+ K call vimkubectl#runCmd(<q-args>)
 
 augroup vimkubectl_internal
   autocmd! *

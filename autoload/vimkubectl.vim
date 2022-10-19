@@ -40,7 +40,7 @@ fun! s:editBuffer_prepareBuffer() abort
 
   " TODO warn before redrawing with unsaved changes
   nnoremap <silent><buffer> gr :call <SID>editBuffer_refreshEditBuffer()<CR>
-  command! -buffer -bar -bang -nargs=? Ksave :call <SID>vimkubectl#util#saveToFile(<q-args>)
+  command! -buffer -bar -bang -nargs=? -complete=file Ksave :call <SID>vimkubectl#util#saveToFile(<q-args>)
 
   augroup vimkubectl_internal_editBufferOnSave
     autocmd! *
@@ -51,6 +51,15 @@ endfun
 
 " COMMAND FUNCTIONS
 " -----------------
+
+" :K
+" Runs any arbitrary command
+fun! vimkubectl#runCmd(cmd) abort
+  if len(a:cmd)
+    call vimkubectl#util#showMessage("Running...")
+    call vimkubectl#kube#runCmd(a:cmd, { out -> vimkubectl#util#printMessage(trim(data)) })
+  endif
+endfun
 
 " :Knamespace
 " If `name` is provided, switch to using it as active namespace.

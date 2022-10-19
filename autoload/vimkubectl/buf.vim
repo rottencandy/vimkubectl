@@ -92,7 +92,7 @@ fun! vimkubectl#buf#view_prepare() abort
         \ 'resourceType': l:resourceType,
         \ }
 
-  let b:jobid = vimkubectl#util#asyncLoop({ -> vimkubectl#kube#fetchResourceList2(l:resourceType, l:ns, function('s:refresh'), l:ctx) }, 5, l:ctx)
+  let b:jobid = vimkubectl#util#asyncLoop({ -> vimkubectl#kube#fetchResourceList(l:resourceType, l:ns, function('s:refresh'), l:ctx) }, 5, l:ctx)
 endfun
 
 " Create or switch to view buffer(kube://{resourceType})

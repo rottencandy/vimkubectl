@@ -4,9 +4,9 @@ Vimkubectl
 
 A Vim/Neovim plugin to manipulate Kubernetes resources.
 
-This plugin acts as a `kubectl` wrapper providing commands and mappings to perform basic actions Kubernetes resources.
-
 ![Screenshot of plugin in use](https://i.imgur.com/PwDD7pS.png)
+
+This plugin is a `kubectl` wrapper providing commands and mappings to perform basic actions on Kubernetes resources.
 
 The following has been implemented so far:
 - Fetch and view lists of kubernetes resources
@@ -74,6 +74,10 @@ This plugin assumes your Kubernetes cluster is reachable and logged in with `kub
 
   Apply file contents. When used with a selection(`{range}`), applies the selected content, else applies the entire file.
   Can be used on any open buffer.
+
+- `:K`
+
+  Run any arbitrary `kubectl` command.
 
 Configuration
 -------------

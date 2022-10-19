@@ -22,12 +22,6 @@ fun! vimkubectl#kube#fetchResourceTypes() abort
   return system(s:craftCmd(join(['api-resources', '--cached', '-o name'])))
 endfun
 
-" Fetch list of resources of a given type
-" returns array of `resourceType/resourceName`
-fun! vimkubectl#kube#fetchResourceList(resourceType, namespace) abort
-  return systemlist(s:craftCmd(join(['get', a:resourceType, '-o name']), a:namespace))
-endfun
-
 " Same as above but returns only list of `resourceName`
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchPureResourceList(resourceType, namespace) abort
@@ -64,9 +58,15 @@ endfun
 
 " Fetch list of resources of a given type
 " returns array of `resourceType/resourceName`
-fun! vimkubectl#kube#fetchResourceList2(resourceType, namespace, callback, ctx = {}) abort
+fun! vimkubectl#kube#fetchResourceList(resourceType, namespace, callback, ctx = {}) abort
   const cmd = s:craftCmd(join(['get', a:resourceType, '-o name']), a:namespace)
   return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback, 'array', a:ctx)
+endfun
+
+" Runs arbitrary command
+fun! vimkubectl#kube#runCmd(cmd, callback) abort
+  const cmd = s:craftCmd(a:cmd)
+  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback)
 endfun
 
 " vim: et:sw=2:sts=2:

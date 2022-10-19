@@ -41,6 +41,9 @@ COMMANDS                                        *vimkubectl-commands*
 			applies the entire file.
 			Can be used on any open buffer.
 
+:K                                              *:K*
+			Run any arbitrary `kubectl` command.
+
 MAPPINGS                                        *vimkubectl-mapping*
 
 These mappings can be used on the split buffers created by |:KGet| or the

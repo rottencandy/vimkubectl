@@ -67,7 +67,7 @@ endfun
 " 'raw' will mean array for nvim and string for vim
 fun! vimkubectl#util#asyncRun(cmd, callback, output = 'string', ctx = {}) abort
   let HandleOut = { jobId, data, event -> len(data) ? a:callback(data, a:ctx) : 0 }
-  let HandleErr = { -> 0 }
+  let HandleErr = { jobId, data, event -> len(data) ? vimkubectl#util#printError(data) : 0 }
   let HandleExit = { -> 0 }
 
   return async#job#start(a:cmd, {
