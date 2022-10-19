@@ -50,7 +50,7 @@ fun! vimkubectl#util#saveToFile(fname = '') abort
   if !len(a:fname)
     let l:fileName = substitute(expand('%'), '\v\/', '_', '') . '.yaml'
   endif
-  let manifest = getline('1', '$')
+  const manifest = getline('1', '$')
   call writefile(l:manifest, l:fileName)
   call vimkubectl#util#printMessage('Saved to ' . l:fileName)
 endfun

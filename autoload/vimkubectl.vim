@@ -26,7 +26,7 @@ endfun
 " If `res` is not provided, 'pods' is assumed.
 fun! vimkubectl#openResourceListView(res) abort
   " TODO: support multiple resource types simultaneously
-  let resource = len(a:res) ? split(a:res)[0] : 'pods'
+  const resource = len(a:res) ? split(a:res)[0] : 'pods'
 
   call vimkubectl#buf#view_load(l:resource)
 endfun
@@ -35,14 +35,14 @@ endfun
 " Open an edit buffer with the resource manifest loaded
 fun! vimkubectl#editResourceObject(fullResource) abort
   " TODO: make this work even with spaces instead of /
-  let resource = split(a:fullResource, '/')
+  const resource = split(a:fullResource, '/')
   "TODO: provide config option for default open method
   call vimkubectl#buf#edit_load('split', l:resource[0], l:resource[1])
 endfun
 
 fun! vimkubectl#hijackBuffer() abort
-  let resource = substitute(expand('%'), '^kube://', '', '')
-  let parsedResource = split(l:resource, '/')
+  const resource = substitute(expand('%'), '^kube://', '', '')
+  const parsedResource = split(l:resource, '/')
   if len(parsedResource) ==# 1
     call vimkubectl#buf#view_prepare()
   else
@@ -59,7 +59,7 @@ endfun
 
 " Completion function for namespaces
 fun! vimkubectl#allNamespaces(A, L, P) abort
-  let namespaces = vimkubectl#kube#fetchNamespaces()
+  const namespaces = vimkubectl#kube#fetchNamespaces()
   if v:shell_error !=# 0
     return ''
   endif
@@ -68,7 +68,7 @@ endfun
 
 " Completion function for resource types only
 fun! vimkubectl#allResources(A, L, P) abort
-  let availableResources = vimkubectl#kube#fetchResourceTypes()
+  const availableResources = vimkubectl#kube#fetchResourceTypes()
   if v:shell_error !=# 0
     return ''
   endif
@@ -77,11 +77,11 @@ endfun
 
 " Completion function for resource types and resource objects
 function! vimkubectl#allResourcesAndObjects(arg, line, pos) abort
-  let arguments = split(a:line, '\s\+')
+  const arguments = split(a:line, '\s\+')
   if len(arguments) > 2 || len(arguments) > 1 && a:arg =~# '^\s*$'
-    let objectList = vimkubectl#kube#fetchPureResourceList(arguments[1], vimkubectl#kube#fetchActiveNamespace())
+    const objectList = vimkubectl#kube#fetchPureResourceList(arguments[1], vimkubectl#kube#fetchActiveNamespace())
   else
-    let objectList = vimkubectl#kube#fetchResourceTypes()
+    const objectList = vimkubectl#kube#fetchResourceTypes()
   endif
   if v:shell_error !=# 0
     return ''

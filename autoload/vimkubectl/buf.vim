@@ -13,11 +13,11 @@ endfun
 " If cursor is on header, or blank space, return ''
 " TODO: range support
 fun! s:resourceUnderCursor() abort
-  let headerLength = len(s:headerText('', 0))
+  const headerLength = len(s:headerText('', 0))
   if getpos('.')[1] <=# l:headerLength
     return ''
   endif
-  let resource = split(getline('.'))
+  const resource = split(getline('.'))
   if len(l:resource)
     return l:resource[0]
   endif
@@ -27,30 +27,30 @@ endfun
 " Open edit buffer for resource under cursor,
 " `opemMethod` can be one of [edit, sp, vs, tabe]
 fun! s:editResource(openMethod) abort
-  let fullResource = s:resourceUnderCursor()
+  const fullResource = s:resourceUnderCursor()
   if !len(l:fullResource)
     return
   endif
 
-  let resource = split(l:fullResource, '/')
+  const resource = split(l:fullResource, '/')
   call vimkubectl#buf#edit_load(a:openMethod, l:resource[0], l:resource[1])
 endfun
 
 " Delete the resource under cursor, after confirmation prompt
 fun! s:deleteResource() abort
-  let fullResource = s:resourceUnderCursor()
-  let resource = split(l:fullResource, '/')
+  const fullResource = s:resourceUnderCursor()
+  const resource = split(l:fullResource, '/')
   if len(l:resource) !=# 2
     return
   endif
 
-  let choice = confirm('Are you sure you want to delete ' . l:resource[1] . ' ?', "&Yes\n&No")
+  const choice = confirm('Are you sure you want to delete ' . l:resource[1] . ' ?', "&Yes\n&No")
   if l:choice !=# 1
     return
   endif
 
   call vimkubectl#util#showMessage('Deleting...')
-  call vimkubectl#kube#deleteResource(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace(), { res -> vimkubectl#util#printMessage(trim(l:res)) })
+  call vimkubectl#kube#deleteResource(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace(), { data -> vimkubectl#util#printMessage(trim(data)) })
 endfun
 
 fun! s:refresh(data, ctx) abort
@@ -66,7 +66,7 @@ fun! s:refresh(data, ctx) abort
   call deletebufline(a:ctx.bufnr, 1, '$')
   call setbufline(a:ctx.bufnr, 1, l:header)
   call setbufline(a:ctx.bufnr, len(l:header) + 1, a:data)
-  "call vimkubectl#util#resetUndo(a:ctx.bufnr)
+  call vimkubectl#util#resetUndo(a:ctx.bufnr)
   call setbufvar(a:ctx.bufnr, '&modifiable', 0)
 endfun
 
@@ -161,7 +161,7 @@ endfun
 
 " Create or switch to view buffer(kube://{resourceType})
 fun! vimkubectl#buf#view_load(resourceType) abort
-  let existing = bufwinnr('^kube://' . a:resourceType . '$')
+  const existing = bufwinnr('^kube://' . a:resourceType . '$')
   if l:existing ==# -1
     execute 'split kube://' . a:resourceType
   else
@@ -172,14 +172,14 @@ endfun
 " Create or switch to edit buffer(kube://{resourceType}/{resourceName})
 fun! vimkubectl#buf#edit_load(openMethod, resourceType, resourceName) abort
   " TODO verify if openMethod is valid
-  let existing = bufwinnr('^kube://' . a:resourceType . '/' . a:resourceName . '$')
+  const existing = bufwinnr('^kube://' . a:resourceType . '/' . a:resourceName . '$')
   if l:existing ==# -1
     silent! exec a:openMethod . ' kube://' . a:resourceType . '/' . a:resourceName
   else
     silent! execute l:existing . 'wincmd w'
     " refresh needs to be done explicitly because buffer override will not
     " happen to exising buffers (due to BufReadCmd)
-    call s:editBuffer_refreshEditBuffer()
+    call s:refreshEditBuffer()
   endif
 endfun
 
@@ -187,6 +187,7 @@ fun! vimkubectl#buf#view_cleanup() abort
   const jid = get(b:, 'jobid')
   if l:jid
     call async#job#stop(b:jobid)
+    let b:jobid = 0
   endif
 endfun
 
