@@ -95,6 +95,70 @@ fun! vimkubectl#buf#view_prepare() abort
   let b:jobid = vimkubectl#util#asyncLoop({ -> vimkubectl#kube#fetchResourceList(l:resourceType, l:ns, function('s:refresh'), l:ctx) }, 5, l:ctx)
 endfun
 
+fun! s:fillBuffer(bufnr, data) abort
+  if len(a:data) <=# 1
+    return
+  endif
+  call deletebufline(a:bufnr, 1, '$')
+  call setbufline(a:bufnr, 1, a:data)
+  call vimkubectl#util#resetUndo(a:bufnr)
+  call setbufvar(a:bufnr, '&modified', 0)
+endfun
+
+" Fetch the manifest of the resource and fill up the buffer,
+" after discarding any existing content
+fun! s:refreshEditBuffer() abort
+  const fullResource = substitute(expand('%'), '^kube://', '', '')
+  const resource = split(l:fullResource, '/')
+
+  call vimkubectl#util#showMessage('Fetching manifest...')
+  return vimkubectl#kube#fetchResourceManifest(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace(), { data -> s:fillBuffer(bufnr(), data) })
+endfun
+
+" Apply the buffer contents
+" If range is used, apply only the selected section,
+" else apply entire buffer
+fun! vimkubectl#buf#applyActiveBuffer() range abort
+  call vimkubectl#util#showMessage('Applying...')
+
+  " todo: use shellescape?
+  const manifest = join(getline(a:firstline, a:lastline), "\n")
+  return vimkubectl#kube#applyString(l:manifest, vimkubectl#kube#fetchActiveNamespace(), { result -> vimkubectl#util#showMessage(trim(result)) })
+endfun
+
+" todo: this is very similar to above func
+fun! s:applyAndUpdate() range abort
+  call vimkubectl#util#showMessage('Applying...')
+
+  fun! s:onApply(result, ...) abort
+    call vimkubectl#util#showMessage(trim(a:result) . ' Updating manifest...')
+    call s:refreshEditBuffer()
+  endfun
+
+  const manifest = join(getline(a:firstline, a:lastline), "\n")
+  return vimkubectl#kube#applyString(l:manifest, vimkubectl#kube#fetchActiveNamespace(), function('s:onApply'))
+endfun
+
+fun! vimkubectl#buf#edit_prepare() abort
+  call vimkubectl#util#showMessage('Loading...')
+
+  setlocal buftype=acwrite
+  setlocal bufhidden=delete
+  setlocal filetype=yaml
+  setlocal noswapfile
+
+  " TODO warn before redrawing with unsaved changes
+  nnoremap <buffer> gr :call <SID>refreshEditBuffer()<CR>
+  command! -buffer -bar -bang -nargs=? -complete=file Ksave :call vimkubectl#util#saveToFile(<q-args>)
+
+  augroup vimkubectl_internal_editBufferOnSave
+    autocmd! *
+    autocmd BufWriteCmd <buffer> 1,$call <SID>applyAndUpdate()
+  augroup END
+
+  return s:refreshEditBuffer()
+endfun
+
 " Create or switch to view buffer(kube://{resourceType})
 fun! vimkubectl#buf#view_load(resourceType) abort
   let existing = bufwinnr('^kube://' . a:resourceType . '$')

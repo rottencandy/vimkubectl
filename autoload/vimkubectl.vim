@@ -1,54 +1,3 @@
-" Fetch the manifest of the resource and fill up the buffer,
-" after discarding any existing content
-fun! s:editBuffer_refreshEditBuffer() abort
-  let fullResource = substitute(expand('%'), '^kube://', '', '')
-  let resource = split(l:fullResource, '/')
-
-  call vimkubectl#util#showMessage('Fetching manifest...')
-  let updatedManifest = vimkubectl#kube#fetchResourceManifest(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace())
-  call vimkubectl#util#clearCmdLine()
-  if v:shell_error !=# 0
-    call vimkubectl#util#printWarning(join(l:updatedManifest, "\n"))
-    return
-  endif
-  silent! execute '%d'
-  call setline('.', l:updatedManifest)
-  call vimkubectl#util#resetUndo()
-  setlocal nomodified
-endfun
-
-" Apply the buffer contents
-fun! s:editBuffer_applyBuffer() range abort
-  call vimkubectl#util#showMessage('Applying resource...')
-  silent let result = vimkubectl#util#applyActiveBuffer(a:firstline, a:lastline)
-  if v:shell_error !=# 0
-    call vimkubectl#util#printWarning(l:result)
-    return
-  endif
-  call vimkubectl#util#printMessage(trim(l:result))
-  call vimkubectl#util#showMessage('Successful. Updating manifest...')
-  call s:editBuffer_refreshEditBuffer()
-  call vimkubectl#util#printMessage('Updated manifest')
-endfun
-
-" Configure current buffer with appropriate options and default mappings for edit
-fun! s:editBuffer_prepareBuffer() abort
-  setlocal buftype=acwrite
-  setlocal bufhidden=delete
-  setlocal filetype=yaml
-  setlocal noswapfile
-
-  " TODO warn before redrawing with unsaved changes
-  nnoremap <silent><buffer> gr :call <SID>editBuffer_refreshEditBuffer()<CR>
-  command! -buffer -bar -bang -nargs=? -complete=file Ksave :call <SID>vimkubectl#util#saveToFile(<q-args>)
-
-  augroup vimkubectl_internal_editBufferOnSave
-    autocmd! *
-    autocmd BufWriteCmd <buffer> 1,$call <SID>editBuffer_applyBuffer()
-  augroup END
-endfun
-
-
 " COMMAND FUNCTIONS
 " -----------------
 
@@ -57,7 +6,7 @@ endfun
 fun! vimkubectl#runCmd(cmd) abort
   if len(a:cmd)
     call vimkubectl#util#showMessage("Running...")
-    call vimkubectl#kube#runCmd(a:cmd, { out -> vimkubectl#util#printMessage(trim(data)) })
+    call vimkubectl#kube#runCmd(a:cmd, { out -> vimkubectl#util#printMessage(trim(out)) })
   endif
 endfun
 
@@ -91,29 +40,13 @@ fun! vimkubectl#editResourceObject(fullResource) abort
   call vimkubectl#buf#edit_load('split', l:resource[0], l:resource[1])
 endfun
 
-" :Kapply
-" Apply the buffer contents.
-" If range is used, apply only the selected section,
-" else apply entire buffer
-fun! vimkubectl#applyActiveBuffer() range abort
-  call vimkubectl#util#showMessage('Applying resource...')
-  silent let result = vimkubectl#util#applyActiveBuffer(a:firstline, a:lastline)
-  if v:shell_error !=# 0
-    call vimkubectl#util#printWarning(l:result)
-    return
-  endif
-  call vimkubectl#util#printMessage(trim(l:result))
-  call vimkubectl#util#showMessage('Successfully applied.')
-endfun
-
 fun! vimkubectl#hijackBuffer() abort
   let resource = substitute(expand('%'), '^kube://', '', '')
   let parsedResource = split(l:resource, '/')
   if len(parsedResource) ==# 1
     call vimkubectl#buf#view_prepare()
   else
-    call s:editBuffer_prepareBuffer()
-    call s:editBuffer_refreshEditBuffer()
+    call vimkubectl#buf#edit_prepare()
   endif
 endfun
 

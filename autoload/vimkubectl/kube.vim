@@ -29,14 +29,19 @@ fun! vimkubectl#kube#fetchPureResourceList(resourceType, namespace) abort
 endfun
 
 " Fetch manifest of resource
-" returns array of strings of each line
-fun! vimkubectl#kube#fetchResourceManifest(resourceType, resource, namespace) abort
-  return systemlist(s:craftCmd(join(['get', a:resourceType, a:resource, '-o yaml']), a:namespace))
+" callback gets array of strings of each line
+fun! vimkubectl#kube#fetchResourceManifest(resourceType, resource, namespace, callback) abort
+  let cmd = s:craftCmd(join(['get', a:resourceType, a:resource, '-o yaml']), a:namespace)
+  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback, 'array')
 endfun
 
 " Apply string
-fun! vimkubectl#kube#applyString(stringData, namespace) abort
-  return system(s:craftCmd('apply -f -', a:namespace), a:stringData)
+fun! vimkubectl#kube#applyString(stringData, namespace, onApply) abort
+  let cmd = 'echo "$1" | ' . s:craftCmd('apply -f -', a:namespace)
+  " arg 2 sets $0, name of shell
+  " arg 3 stringData is supplied to cmd as $1 by bash
+  " See bash(1)
+  return vimkubectl#util#asyncRun(['bash', '-c', l:cmd, 'apply', a:stringData], a:onApply)
 endfun
 
 " Get currently active namespace

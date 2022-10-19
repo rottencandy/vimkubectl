@@ -43,12 +43,6 @@ fun! vimkubectl#util#clearCmdLine() abort
   echon ''
 endfun
 
-" Apply the contents of the active buffer,
-fun! vimkubectl#util#applyActiveBuffer(startLine, endLine) abort
-  let manifest = getline(a:startLine, a:endLine)
-  return vimkubectl#kube#applyString(l:manifest, vimkubectl#kube#fetchActiveNamespace())
-endfun
-
 " Save buffer file contents to local file
 " saves as `resourceType_resource.yaml` if name is not given
 fun! vimkubectl#util#saveToFile(fname = '') abort
