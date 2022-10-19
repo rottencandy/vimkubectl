@@ -48,7 +48,7 @@ endfun
 fun! vimkubectl#util#saveToFile(fname = '') abort
   let fileName = a:fname
   if !len(a:fname)
-    let l:fileName = substitute(expand('%'), '\v\/', '_', '') . '.yaml'
+    let l:fileName = substitute(substitute(expand('%'), '\v^kube:\/\/', '', ''), '\v\/', '_', '') . '.yaml'
   endif
   const manifest = getline('1', '$')
   call writefile(l:manifest, l:fileName)
