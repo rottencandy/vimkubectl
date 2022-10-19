@@ -6,11 +6,13 @@ const s:msgPrefix = '[Vimkubectl] '
 " Source: https://vi.stackexchange.com/a/16915/22360
 fun! vimkubectl#util#resetUndo(bufnr) abort
   try
-    let undo_setting = &undolevels
-    set undolevels=-1
+    const undo_setting = getbufvar(a:bufnr, '&undolevels')
+    call setbufvar(a:bufnr, '&undolevels', -1)
     silent! exec "normal a \<BS>\<Esc>"
+    call appendbufline(a:bufnr, '$', '')
+    call deletebufline(a:bufnr, '$')
   finally
-    let &undolevels = undo_setting
+    call setbufvar(a:bufnr, '&undolevels', l:undo_setting)
   endtry
 endfun
 
