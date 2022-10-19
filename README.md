@@ -6,7 +6,7 @@ A Vim/Neovim plugin to manipulate Kubernetes resources.
 
 ![Screenshot of plugin in use](https://i.imgur.com/PwDD7pS.png)
 
-This plugin is a `kubectl` wrapper providing commands and mappings to perform basic actions on Kubernetes resources.
+This plugin is a `kubectl` wrapper providing commands and mappings to perform actions on Kubernetes resources.
 
 The following has been implemented so far:
 - Fetch and view lists of kubernetes resources
@@ -32,15 +32,13 @@ Manual          | Copy all of the files into your `~/.vim` directory
 Usage
 -----
 
-This plugin assumes your Kubernetes cluster is reachable and logged in with `kubectl` or `oc`.(see [configuration](#configuration))
+This plugin assumes your Kubernetes cluster is reachable and logged in with [kubectl][4] or [oc][5].(see [configuration](#configuration))
 
 - `:Kget {resource}`
 
   Get a list of all objects of type `{resource}`. If `{resource}` is not given, `pod` is used.
 
   You can also use `<Tab>` for completion and to cycle through possible resources.
-
-  - `gr` to refresh/update the list of resources.
 
   - `ii` (think, "insert mode") to open and edit the manifest of the resource under cursor, in the current window(opens in `YAML` format)
 
@@ -86,7 +84,7 @@ Configuration
 
   **Default: 'kubectl'**
 
-  If you are using an alternate Kubernetes cli, it can be specified with `g:vimkubectl_command`.
+  If you are using an alternate Kubernetes client, it can be specified with `g:vimkubectl_command`.
 
   For example to use OpenShift's `oc` as the command, add this to your `vimrc`:
   ```
@@ -107,9 +105,11 @@ Configuration
 License
 -------
 
-Licensed under the [MIT License](LICENSE.txt).
+[MIT](LICENSE)
 
 [0]: https://github.com/Shougo/neobundle.vim
 [1]: https://github.com/gmarik/vundle
 [2]: https://github.com/junegunn/vim-plug
 [3]: https://github.com/tpope/vim-pathogen
+[4]: https://github.com/kubernetes/kubectl
+[5]: https://github.com/openshift/oc

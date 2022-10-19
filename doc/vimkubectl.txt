@@ -10,24 +10,24 @@ This plugin assumes that the user is logged in to the Kubernetes cluster using
 
 COMMANDS                                        *vimkubectl-commands*
 
-:Kget {resource}                                *:KGet*
+:Kget {resource}                                *:Kget*
 			Open a split that displays a list of all resources that
 			match {resource}. If {resource} is not given, pod is
 			used.
 
-:Kedit {resource} {object}                      *:KEdit*
+:Kedit {resource} {object}                      *:Kedit*
 			Open a new split containing the manifest yaml of
 			{object} of type {resource}. This is functionally
 			similar to the `kubectl edit` command. (Also has
 			`<Tab>` completion)
 
-:Ksave {filename}                               *:KSave*
+:Ksave {filename}                               *:Ksave*
 			Save the currently open manifest locally to a file.
 			If {filename} is not given, the resource name is used.
 			(NOTE: This command is only available when viewing
 			resource manifests)
 
-:Knamespace {name}                              *:KNamespace*
+:Knamespace {name}                              *:Knamespace*
 			Switch to using {name} as the current namespace.
 			If {name} is not given, prints the currently selected
 			namespace.
@@ -67,10 +67,7 @@ dd                                              *vimkubectl_id*
 			(Prompts for confirmation)
 
 gr                                              *vimkubectl_gr*
-			When used in the resource view buffer:
-			Refresh/update the list of resources.
-
-			When used in the manifest edit buffer:
+			When used in the manifest edit buffer,
 			Update the currently editing manifest.
 			(NOTE: This will disregard any local unsaved changes)
 
