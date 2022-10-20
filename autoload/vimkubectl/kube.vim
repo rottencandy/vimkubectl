@@ -1,13 +1,5 @@
-" Create command using g:vimkubectl_command
-fun! s:craftCmd(command, namespace = '') abort
-  let nsFlag = len(a:namespace) ? '-n ' . a:namespace : ''
-  let timeoutFlag = '--request-timeout=' . get(g:, 'vimkubectl_timeout', 5) . 's'
-  return join([get(g:, 'vimkubectl_command', 'kubectl'), a:command, l:nsFlag, l:timeoutFlag])
-endfun
-
-fun! s:asyncCmd(command) abort
-  return ['bash', '-c', a:command]
-endfun
+" LEGACY SYNCHRONOUS FUNCTIONS
+" ----------------------------
 
 " Fetch list of all namespaces
 " returns string of space-separated values
@@ -28,6 +20,25 @@ fun! vimkubectl#kube#fetchPureResourceList(resourceType, namespace) abort
   return system(s:craftCmd(join(['get', a:resourceType, '-o custom-columns=":metadata.name"']), a:namespace))
 endfun
 
+" Get currently active namespace
+fun! vimkubectl#kube#fetchActiveNamespace() abort
+  return system(s:craftCmd('config view --minify -o ''jsonpath={..namespace}'''))
+endfun
+
+" ASYNCHRONOUS FUNCTIONS
+" ----------------------
+
+" Create command using g:vimkubectl_command
+fun! s:craftCmd(command, namespace = '') abort
+  let nsFlag = len(a:namespace) ? '-n ' . a:namespace : ''
+  let timeoutFlag = '--request-timeout=' . get(g:, 'vimkubectl_timeout', 5) . 's'
+  return join([get(g:, 'vimkubectl_command', 'kubectl'), a:command, l:nsFlag, l:timeoutFlag])
+endfun
+
+fun! s:asyncCmd(command) abort
+  return ['bash', '-c', a:command]
+endfun
+
 " Fetch manifest of resource
 " callback gets array of strings of each line
 fun! vimkubectl#kube#fetchResourceManifest(resourceType, resource, namespace, callback) abort
@@ -42,11 +53,6 @@ fun! vimkubectl#kube#applyString(stringData, namespace, onApply) abort
   " arg 3 stringData is supplied to cmd as $1 by bash
   " See bash(1)
   return vimkubectl#util#asyncRun(['bash', '-c', l:cmd, 'apply', a:stringData], a:onApply)
-endfun
-
-" Get currently active namespace
-fun! vimkubectl#kube#fetchActiveNamespace() abort
-  return system(s:craftCmd('config view --minify -o ''jsonpath={..namespace}'''))
 endfun
 
 " Delete resource

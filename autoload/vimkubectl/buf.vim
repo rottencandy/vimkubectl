@@ -1,8 +1,8 @@
-let b:jobid = 0
+let b:vimkubectl_jobid = 0
 
-fun! s:headerText(resource, resourceCount) abort
+fun! s:headerText(resource, resourceCount, ns) abort
   return [
-        \ 'Namespace: ' . vimkubectl#kube#fetchActiveNamespace(),
+        \ 'Namespace: ' . a:ns,
         \ 'Resource: ' . a:resource . ' (' . a:resourceCount . ')',
         \ 'Help: g?',
         \ '',
@@ -13,7 +13,7 @@ endfun
 " If cursor is on header, or blank space, return ''
 " TODO: range support
 fun! s:resourceUnderCursor() abort
-  const headerLength = len(s:headerText('', 0))
+  const headerLength = len(s:headerText('', 0, ''))
   if getpos('.')[1] <=# l:headerLength
     return ''
   endif
@@ -54,13 +54,11 @@ fun! s:deleteResource() abort
 endfun
 
 fun! s:refresh(data, ctx) abort
-  call filter(a:data, { i, x -> len(x) })
-
-  if !len(a:data)
+  if len(a:data) <=# 1 || !len(a:data[0])
     return
   endif
 
-  const header = s:headerText(a:ctx.resourceType, len(a:data))
+  const header = s:headerText(a:ctx.resourceType, len(a:data), a:ctx.ns)
 
   call setbufvar(a:ctx.bufnr, '&modifiable', 1)
   call deletebufline(a:ctx.bufnr, 1, '$')
@@ -71,6 +69,9 @@ fun! s:refresh(data, ctx) abort
 endfun
 
 fun! vimkubectl#buf#view_prepare() abort
+  if exists('b:vimkubectl_prepared')
+    return
+  endif
   call vimkubectl#util#showMessage('Loading...')
 
   setlocal buftype=nowrite
@@ -90,9 +91,11 @@ fun! vimkubectl#buf#view_prepare() abort
   const ctx = {
         \ 'bufnr': bufnr(),
         \ 'resourceType': l:resourceType,
+        \ 'ns': l:ns,
         \ }
 
-  let b:jobid = vimkubectl#util#asyncLoop({ -> vimkubectl#kube#fetchResourceList(l:resourceType, l:ns, function('s:refresh'), l:ctx) }, 5, l:ctx)
+  let b:vimkubectl_prepared = 1
+  let b:vimkubectl_jobid = vimkubectl#util#asyncLoop({ -> vimkubectl#kube#fetchResourceList(l:resourceType, l:ns, function('s:refresh'), l:ctx) }, 5, l:ctx)
 endfun
 
 fun! s:fillBuffer(bufnr, data) abort
@@ -140,6 +143,9 @@ fun! s:applyAndUpdate() range abort
 endfun
 
 fun! vimkubectl#buf#edit_prepare() abort
+  if exists('b:vimkubectl_prepared')
+    return
+  endif
   call vimkubectl#util#showMessage('Loading...')
 
   setlocal buftype=acwrite
@@ -156,6 +162,7 @@ fun! vimkubectl#buf#edit_prepare() abort
     autocmd BufWriteCmd <buffer> 1,$call <SID>applyAndUpdate()
   augroup END
 
+  let b:vimkubectl_prepared = 1
   return s:refreshEditBuffer()
 endfun
 
@@ -184,10 +191,10 @@ fun! vimkubectl#buf#edit_load(openMethod, resourceType, resourceName) abort
 endfun
 
 fun! vimkubectl#buf#view_cleanup() abort
-  const jid = get(b:, 'jobid')
+  const jid = get(b:, 'vimkubectl_jobid')
   if l:jid
-    call async#job#stop(b:jobid)
-    let b:jobid = 0
+    call async#job#stop(b:vimkubectl_jobid)
+    let b:vimkubectl_jobid = 0
   endif
 endfun
 
