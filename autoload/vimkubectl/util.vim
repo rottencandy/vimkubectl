@@ -3,12 +3,11 @@
 const s:msgPrefix = '[Vimkubectl] '
 
 " Clear all undo history
-" Source: https://vi.stackexchange.com/a/16915/22360
+" Adapted from: https://vi.stackexchange.com/a/16915/22360
 fun! vimkubectl#util#resetUndo(bufnr) abort
   try
     const undo_setting = getbufvar(a:bufnr, '&undolevels')
     call setbufvar(a:bufnr, '&undolevels', -1)
-    silent! exec "normal a \<BS>\<Esc>"
     call appendbufline(a:bufnr, '$', '')
     call deletebufline(a:bufnr, '$')
   finally
