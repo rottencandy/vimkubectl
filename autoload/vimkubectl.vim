@@ -6,7 +6,10 @@
 fun! vimkubectl#runCmd(cmd) abort
   if len(a:cmd)
     call vimkubectl#util#showMessage("Running...")
-    call vimkubectl#kube#runCmd(a:cmd, { out -> vimkubectl#util#printMessage(trim(out)) })
+    call vimkubectl#kube#runCmd(
+          \ a:cmd,
+          \ { out -> vimkubectl#util#printMessage(trim(out)) }
+          \ )
   endif
 endfun
 
@@ -15,14 +18,20 @@ endfun
 " Else print currently active namespace.
 fun! vimkubectl#switchOrShowNamespace(name) abort
   if len(a:name)
-    call vimkubectl#kube#setNs(a:name, { -> vimkubectl#util#printMessage('Switched to ' . a:name) })
+    call vimkubectl#kube#setNs(
+          \ a:name,
+          \ { -> vimkubectl#util#printMessage('Switched to ' . a:name) }
+          \ )
   else
-    call vimkubectl#util#printMessage('Active NS: ' . vimkubectl#kube#fetchActiveNamespace())
+    call vimkubectl#util#printMessage(
+          \ 'Active NS: ' . vimkubectl#kube#fetchActiveNamespace()
+          \ )
   endif
 endfun
 
 " :Kget
-" Open or if already existing, switch to view buffer and load the list of `res` resources.
+" Open or if already existing, switch to view buffer and load the list
+" of `res` resources.
 " If `res` is not provided, 'pods' is assumed.
 fun! vimkubectl#openResourceListView(res) abort
   " TODO: support multiple resource types simultaneously
@@ -79,7 +88,10 @@ endfun
 function! vimkubectl#allResourcesAndObjects(arg, line, pos) abort
   const arguments = split(a:line, '\s\+')
   if len(arguments) > 2 || len(arguments) > 1 && a:arg =~# '^\s*$'
-    const objectList = vimkubectl#kube#fetchPureResourceList(arguments[1], vimkubectl#kube#fetchActiveNamespace())
+    const objectList = vimkubectl#kube#fetchPureResourceList(
+          \ arguments[1],
+          \ vimkubectl#kube#fetchActiveNamespace()
+          \ )
   else
     const objectList = vimkubectl#kube#fetchResourceTypes()
   endif

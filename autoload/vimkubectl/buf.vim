@@ -44,13 +44,20 @@ fun! s:deleteResource() abort
     return
   endif
 
-  const choice = confirm('Are you sure you want to delete ' . l:resource[1] . ' ?', "&Yes\n&No")
+  const choice = confirm(
+        \ 'Are you sure you want to delete ' . l:resource[1] . ' ?', "&Yes\n&No"
+        \ )
   if l:choice !=# 1
     return
   endif
 
   call vimkubectl#util#showMessage('Deleting...')
-  call vimkubectl#kube#deleteResource(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace(), { data -> vimkubectl#util#printMessage(trim(data)) })
+  call vimkubectl#kube#deleteResource(
+        \ l:resource[0],
+        \ l:resource[1],
+        \ vimkubectl#kube#fetchActiveNamespace(),
+        \ { data -> vimkubectl#util#printMessage(trim(data))
+        \ })
 endfun
 
 fun! s:refresh(data, ctx) abort
@@ -95,7 +102,11 @@ fun! vimkubectl#buf#view_prepare() abort
         \ }
 
   let b:vimkubectl_prepared = 1
-  let b:vimkubectl_jobid = vimkubectl#util#asyncLoop({ -> vimkubectl#kube#fetchResourceList(l:resourceType, l:ns, function('s:refresh'), l:ctx) }, 5, l:ctx)
+  let b:vimkubectl_jobid = vimkubectl#util#asyncLoop(
+        \ { -> vimkubectl#kube#fetchResourceList(l:resourceType, l:ns, function('s:refresh'), l:ctx) },
+        \ 5,
+        \ l:ctx
+        \ )
 endfun
 
 fun! s:fillBuffer(bufnr, data) abort
@@ -115,7 +126,12 @@ fun! s:refreshEditBuffer() abort
   const resource = split(l:fullResource, '/')
 
   call vimkubectl#util#showMessage('Fetching manifest...')
-  return vimkubectl#kube#fetchResourceManifest(l:resource[0], l:resource[1], vimkubectl#kube#fetchActiveNamespace(), { data -> s:fillBuffer(bufnr(), data) })
+  return vimkubectl#kube#fetchResourceManifest(
+        \ l:resource[0],
+        \ l:resource[1],
+        \ vimkubectl#kube#fetchActiveNamespace(),
+        \ { data -> s:fillBuffer(bufnr(), data) }
+        \ )
 endfun
 
 " Apply the buffer contents
@@ -126,7 +142,11 @@ fun! vimkubectl#buf#applyActiveBuffer() range abort
 
   " todo: use shellescape?
   const manifest = join(getline(a:firstline, a:lastline), "\n")
-  return vimkubectl#kube#applyString(l:manifest, vimkubectl#kube#fetchActiveNamespace(), { result -> vimkubectl#util#showMessage(trim(result)) })
+  return vimkubectl#kube#applyString(
+        \ l:manifest,
+        \ vimkubectl#kube#fetchActiveNamespace(),
+        \ { result -> vimkubectl#util#showMessage(trim(result)) }
+        \ )
 endfun
 
 " todo: this is very similar to above func
@@ -139,7 +159,11 @@ fun! s:applyAndUpdate() range abort
   endfun
 
   const manifest = join(getline(a:firstline, a:lastline), "\n")
-  return vimkubectl#kube#applyString(l:manifest, vimkubectl#kube#fetchActiveNamespace(), function('s:onApply'))
+  return vimkubectl#kube#applyString(
+        \ l:manifest,
+        \ vimkubectl#kube#fetchActiveNamespace(),
+        \ function('s:onApply')
+        \ )
 endfun
 
 fun! vimkubectl#buf#edit_prepare() abort

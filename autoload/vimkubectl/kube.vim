@@ -17,12 +17,17 @@ endfun
 " Same as above but returns only list of `resourceName`
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchPureResourceList(resourceType, namespace) abort
-  return system(s:craftCmd(join(['get', a:resourceType, '-o custom-columns=":metadata.name"']), a:namespace))
+  return system(s:craftCmd(
+        \ join(['get', a:resourceType, '-o custom-columns=":metadata.name"']),
+        \ a:namespace
+        \ ))
 endfun
 
 " Get currently active namespace
 fun! vimkubectl#kube#fetchActiveNamespace() abort
-  return system(s:craftCmd('config view --minify -o ''jsonpath={..namespace}'''))
+  return system(
+        \ s:craftCmd('config view --minify -o ''jsonpath={..namespace}''')
+        \ )
 endfun
 
 " ASYNCHRONOUS FUNCTIONS
@@ -31,8 +36,16 @@ endfun
 " Create command using g:vimkubectl_command
 fun! s:craftCmd(command, namespace = '') abort
   let nsFlag = len(a:namespace) ? '-n ' . a:namespace : ''
-  let timeoutFlag = '--request-timeout=' . get(g:, 'vimkubectl_timeout', 5) . 's'
-  return join([get(g:, 'vimkubectl_command', 'kubectl'), a:command, l:nsFlag, l:timeoutFlag])
+  let timeoutFlag =
+        \ '--request-timeout='
+        \ . get(g:, 'vimkubectl_timeout', 5)
+        \ . 's'
+  return join([
+        \ get(g:, 'vimkubectl_command', 'kubectl'),
+        \ a:command,
+        \ l:nsFlag,
+        \ l:timeoutFlag
+        \ ])
 endfun
 
 fun! s:asyncCmd(command) abort
@@ -41,8 +54,16 @@ endfun
 
 " Fetch manifest of resource
 " callback gets array of strings of each line
-fun! vimkubectl#kube#fetchResourceManifest(resourceType, resource, namespace, callback) abort
-  let cmd = s:craftCmd(join(['get', a:resourceType, a:resource, '-o yaml']), a:namespace)
+fun! vimkubectl#kube#fetchResourceManifest(
+      \ resourceType,
+      \ resource,
+      \ namespace,
+      \ callback
+      \ ) abort
+  let cmd = s:craftCmd(
+        \ join(['get', a:resourceType, a:resource, '-o yaml']),
+        \ a:namespace
+        \ )
   return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback, 'array')
 endfun
 
@@ -52,7 +73,10 @@ fun! vimkubectl#kube#applyString(stringData, namespace, onApply) abort
   " arg 2 sets $0, name of shell
   " arg 3 stringData is supplied to cmd as $1 by bash
   " See bash(1)
-  return vimkubectl#util#asyncRun(['bash', '-c', l:cmd, 'apply', a:stringData], a:onApply)
+  return vimkubectl#util#asyncRun(
+        \ ['bash', '-c', l:cmd, 'apply', a:stringData],
+        \ a:onApply
+        \ )
 endfun
 
 " Delete resource
@@ -69,9 +93,19 @@ endfun
 
 " Fetch list of resources of a given type
 " returns array of `resourceType/resourceName`
-fun! vimkubectl#kube#fetchResourceList(resourceType, namespace, callback, ctx = {}) abort
+fun! vimkubectl#kube#fetchResourceList(
+      \ resourceType,
+      \ namespace,
+      \ callback,
+      \ ctx = {}
+      \ ) abort
   const cmd = s:craftCmd(join(['get', a:resourceType, '-o name']), a:namespace)
-  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback, 'array', a:ctx)
+  return vimkubectl#util#asyncRun(
+        \ s:asyncCmd(l:cmd),
+        \ a:callback,
+        \ 'array',
+        \ a:ctx
+        \ )
 endfun
 
 " Runs arbitrary command
