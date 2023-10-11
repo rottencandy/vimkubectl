@@ -65,6 +65,9 @@ fun! s:refresh(data, ctx) abort
     return
   endif
 
+  call filter(a:data, {_, v -> len(v)})
+  "call filter(a:data, 'v:val !=# ""')
+
   const header = s:headerText(a:ctx.resourceType, len(a:data), a:ctx.ns)
 
   call setbufvar(a:ctx.bufnr, '&modifiable', 1)
