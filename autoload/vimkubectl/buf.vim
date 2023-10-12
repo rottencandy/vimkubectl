@@ -61,19 +61,20 @@ fun! s:deleteResource() abort
 endfun
 
 fun! s:refresh(data, ctx) abort
-  if len(a:data) <=# 1 || !len(a:data[0])
-    return
-  endif
-
   call filter(a:data, {_, v -> len(v)})
-  "call filter(a:data, 'v:val !=# ""')
+  "if len(a:data) ==# 0
+  "  call vimkubectl#util#printError('No ' . a:ctx.resourceType . ' found')
+  "  return
+  "endif
 
   const header = s:headerText(a:ctx.resourceType, len(a:data), a:ctx.ns)
 
+  " Clear the "loading" message
+  "echo ''
   call setbufvar(a:ctx.bufnr, '&modifiable', 1)
-  call deletebufline(a:ctx.bufnr, 1, '$')
   call setbufline(a:ctx.bufnr, 1, l:header)
-  call setbufline(a:ctx.bufnr, len(l:header) + 1, a:data)
+  call deletebufline(a:ctx.bufnr, len(l:header) + 1, '$')
+  call appendbufline(a:ctx.bufnr, '$', a:data)
   call vimkubectl#util#resetUndo(a:ctx.bufnr)
   call setbufvar(a:ctx.bufnr, '&modifiable', 0)
 endfun
