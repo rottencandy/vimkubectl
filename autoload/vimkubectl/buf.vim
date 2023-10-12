@@ -105,9 +105,10 @@ fun! vimkubectl#buf#view_prepare() abort
         \ }
 
   let b:vimkubectl_prepared = 1
-  let b:vimkubectl_jobid = vimkubectl#util#asyncLoop(
-        \ { -> vimkubectl#kube#fetchResourceList(l:resourceType, l:ns, function('s:refresh'), l:ctx) },
-        \ 5,
+  let b:vimkubectl_jobid = vimkubectl#kube#fetchResourceListLoop(
+        \ l:resourceType, 
+        \ l:ns, 
+        \ function('s:refresh'), 
         \ l:ctx
         \ )
 endfun

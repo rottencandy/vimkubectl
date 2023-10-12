@@ -52,6 +52,14 @@ fun! s:asyncCmd(command) abort
   return ['bash', '-c', a:command]
 endfun
 
+fun! s:asyncLoopCmd(command, interval = 5) abort
+  return [
+        \ 'bash',
+        \ '-c',
+        \ 'while true; do ' . a:command . '; sleep ' . a:interval . '; done'
+        \ ]
+endfun
+
 " Fetch manifest of resource
 " callback gets array of strings of each line
 fun! vimkubectl#kube#fetchResourceManifest(
@@ -102,6 +110,22 @@ fun! vimkubectl#kube#fetchResourceList(
   const cmd = s:craftCmd(join(['get', a:resourceType, '-o name']), a:namespace)
   return vimkubectl#util#asyncRun(
         \ s:asyncCmd(l:cmd),
+        \ a:callback,
+        \ 'array',
+        \ a:ctx
+        \ )
+endfun
+
+" Same as fetchResourceList but keep polling every 5 seconds
+fun! vimkubectl#kube#fetchResourceListLoop(
+      \ resourceType,
+      \ namespace,
+      \ callback,
+      \ ctx = {}
+      \ ) abort
+  const cmd = s:craftCmd(join(['get', a:resourceType, '-o name']), a:namespace)
+  return vimkubectl#util#asyncRun(
+        \ s:asyncLoopCmd(l:cmd),
         \ a:callback,
         \ 'array',
         \ a:ctx
