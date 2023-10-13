@@ -13,7 +13,7 @@ fun! vimkubectl#runCmd(cmd) abort
   endif
 endfun
 
-" :Knamespace
+" :Kns
 " If `name` is provided, switch to using it as active namespace.
 " Else print currently active namespace.
 fun! vimkubectl#switchOrShowNamespace(name) abort

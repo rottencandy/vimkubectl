@@ -27,7 +27,7 @@ COMMANDS                                        *vimkubectl-commands*
 			(NOTE: This command is only available when viewing
 			resource manifests)
 
-:Knamespace {name}                              *:Knamespace*
+:Kns {name}                                     *:Kns*
 			Switch to using {name} as the current namespace.
 			If {name} is not given, prints the currently selected
 			namespace.

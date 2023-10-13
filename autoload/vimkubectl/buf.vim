@@ -61,7 +61,7 @@ fun! s:deleteResource() abort
 endfun
 
 fun! s:refresh(data, ctx) abort
-  call filter(a:data, {_, v -> len(v)})
+  call filter(a:data, { _, v -> len(v) })
   "if len(a:data) ==# 0
   "  call vimkubectl#util#printError('No ' . a:ctx.resourceType . ' found')
   "  return

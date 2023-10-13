@@ -62,7 +62,7 @@ This plugin assumes your Kubernetes cluster is reachable and logged in with [kub
 
   - `:Ksave {filename}` to save the manifest locally. If `{filename}` is not given, the resource object name is used.
 
-- `:Knamespace {name}`
+- `:Kns {name}`
 
   Change the currently selected namespace to `{name}`. If `{name}` is not given, prints the currently used namespace.
 
