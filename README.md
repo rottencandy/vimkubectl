@@ -68,6 +68,10 @@ This plugin assumes your Kubernetes cluster is reachable and logged in with [kub
 
   `<Tab>` completion can be used to cycle through available namespaces.
 
+- `:Kctx`
+
+  Print the currently active context.
+
 - `:{range}Kapply`
 
   Apply file contents. When used with a selection(`{range}`), applies the selected content, else applies the entire file.

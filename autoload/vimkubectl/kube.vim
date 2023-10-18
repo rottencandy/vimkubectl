@@ -30,6 +30,13 @@ fun! vimkubectl#kube#fetchActiveNamespace() abort
         \ )
 endfun
 
+" Get currently active context
+fun! vimkubectl#kube#fetchActiveContext() abort
+  return system(
+        \ s:craftCmd('config current-context')
+        \ )
+endfun
+
 " ASYNCHRONOUS FUNCTIONS
 " ----------------------
 

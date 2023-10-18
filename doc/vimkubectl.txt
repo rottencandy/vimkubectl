@@ -35,6 +35,9 @@ COMMANDS                                        *vimkubectl-commands*
 			|vimkubectl| commands,
 			and does not set/modify `kubectl config`)
 
+:Kctx                                           *:Kctx*
+			Print the currently active context.
+
 :{range}Kapply                                  *:Kapply*
 			Apply file contents. When used with a
 			selection({range}), applies the selected content, else

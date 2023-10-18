@@ -29,6 +29,14 @@ fun! vimkubectl#switchOrShowNamespace(name) abort
   endif
 endfun
 
+" :Kctx
+" Print currently active context.
+fun! vimkubectl#showContext(name) abort
+  call vimkubectl#util#printMessage(
+        \ 'Active context: ' . vimkubectl#kube#fetchActiveContext()
+        \ )
+endfun
+
 " :Kget
 " Open or if already existing, switch to view buffer and load the list
 " of `res` resources.
