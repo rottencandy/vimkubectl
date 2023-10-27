@@ -37,6 +37,20 @@ fun! vimkubectl#kube#fetchActiveContext() abort
         \ )
 endfun
 
+" Fetch all contexts
+" returns string of space-separated values
+fun! vimkubectl#kube#fetchContexts() abort
+  return system(
+        \ s:craftCmd('config get-contexts -o name')
+        \ )
+endfun
+
+" Set active context
+fun! vimkubectl#kube#setContext(ctx, onSet) abort
+  const cmd = s:craftCmd('config use-context ' . a:ctx)
+  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onSet)
+endfun
+
 " ASYNCHRONOUS FUNCTIONS
 " ----------------------
 

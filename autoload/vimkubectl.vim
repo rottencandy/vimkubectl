@@ -30,11 +30,19 @@ fun! vimkubectl#switchOrShowNamespace(name) abort
 endfun
 
 " :Kctx
-" Print currently active context.
-fun! vimkubectl#showContext(name) abort
-  call vimkubectl#util#printMessage(
-        \ 'Active context: ' . vimkubectl#kube#fetchActiveContext()
-        \ )
+" If `name` is provided, switch to using it as active context.
+" Else print currently active context.
+fun! vimkubectl#switchOrShowContext(name) abort
+  if len(a:name)
+    call vimkubectl#kube#setContext(
+          \ a:name,
+          \ { -> vimkubectl#util#printMessage('Switched to ' . a:name) }
+          \ )
+  else
+    call vimkubectl#util#printMessage(
+          \ 'Active context: ' . vimkubectl#kube#fetchActiveContext()
+          \ )
+  endif
 endfun
 
 " :Kget
@@ -81,6 +89,15 @@ fun! vimkubectl#allNamespaces(A, L, P) abort
     return ''
   endif
   return l:namespaces
+endfun
+
+" Completion function for contexts
+fun! vimkubectl#allContexts(A, L, P) abort
+  const contexts = vimkubectl#kube#fetchContexts()
+  if v:shell_error !=# 0
+    return ''
+  endif
+  return l:contexts
 endfun
 
 " Completion function for resource types only

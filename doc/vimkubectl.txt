@@ -35,8 +35,9 @@ COMMANDS                                        *vimkubectl-commands*
 			|vimkubectl| commands,
 			and does not set/modify `kubectl config`)
 
-:Kctx                                           *:Kctx*
-			Print the currently active context.
+:Kctx {name}                                    *:Kctx*
+			Switch to using {name} as the current context.
+			If {name} is not given, prints the currently active context.
 
 :{range}Kapply                                  *:Kapply*
 			Apply file contents. When used with a

@@ -64,17 +64,19 @@ This plugin assumes your Kubernetes cluster is reachable and logged in with [kub
 
 - `:Kns {name}`
 
-  Change the currently selected namespace to `{name}`. If `{name}` is not given, prints the currently used namespace.
+  Change the active namespace to `{name}`. If `{name}` is not given, prints the currently used namespace.
 
   `<Tab>` completion can be used to cycle through available namespaces.
 
-- `:Kctx`
+- `:Kctx {name}`
 
-  Print the currently active context.
+  Change the active context to `{name}`. If `{name}` is not given, prints the currently active context.
+
+  `<Tab>` completion can be used to cycle through available contexts.
 
 - `:{range}Kapply`
 
-  Apply file contents. When used with a selection(`{range}`), applies the selected content, else applies the entire file.
+  Apply file contents. When used with a selection(), applies the selected content, else applies the entire file.
   Can be used on any open buffer.
 
 - `:K`

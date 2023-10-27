@@ -57,6 +57,7 @@ endfun
 " Wrapper over async.vim https://github.com/prabirshrestha/async.vim
 " Run the `cmd` asynchronously, and call `callback` everytime STDOUT is
 " written to(Does not run when STDOUT is empty).
+" Print error message in case of non-zero return.
 " `output` defines the data type, either 'string'(default), 'array' or 'raw'
 " 'string' is noop in vim, 'array' is noop in nvim
 " 'raw' will mean array for nvim and string for vim
