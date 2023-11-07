@@ -71,12 +71,21 @@ fun! s:refresh(data, ctx) abort
 
   " Clear the "loading" message
   "echo ''
+
+  const winid = bufwinid(a:ctx.bufnr)
+  const curpos = getcurpos(l:winid)
+  " todo: is winsaveview and winrestview needed here too?
+
   call setbufvar(a:ctx.bufnr, '&modifiable', 1)
   call setbufline(a:ctx.bufnr, 1, l:header)
   call deletebufline(a:ctx.bufnr, len(l:header) + 1, '$')
   call appendbufline(a:ctx.bufnr, '$', a:data)
   call vimkubectl#util#resetUndo(a:ctx.bufnr)
   call setbufvar(a:ctx.bufnr, '&modifiable', 0)
+  " restore cursor pos in (possibly) inactive buffer
+  " https://github.com/vim/vim/issues/7784#issuecomment-774298015
+  " todo: extract this to util
+  call win_execute(l:winid, 'call setpos(".", l:curpos)')
 endfun
 
 fun! vimkubectl#buf#view_prepare() abort
@@ -118,10 +127,13 @@ fun! s:fillBuffer(bufnr, data) abort
   if len(a:data) <=# 1
     return
   endif
+  const winid = bufwinid(a:bufnr)
+  const curpos = getcurpos(l:winid)
   call deletebufline(a:bufnr, 1, '$')
   call setbufline(a:bufnr, 1, a:data)
   call vimkubectl#util#resetUndo(a:bufnr)
   call setbufvar(a:bufnr, '&modified', 0)
+  call win_execute(l:winid, 'call setpos(".", l:curpos)')
 endfun
 
 " Fetch the manifest of the resource and fill up the buffer,
@@ -154,8 +166,7 @@ fun! vimkubectl#buf#applyActiveBuffer() range abort
         \ )
 endfun
 
-" todo: this is very similar to above func
-fun! s:applyAndUpdate() range abort
+fun! s:applyAndUpdate() abort
   call vimkubectl#util#showMessage('Applying...')
 
   fun! s:onApply(result, ...) abort
@@ -163,7 +174,7 @@ fun! s:applyAndUpdate() range abort
     call s:refreshEditBuffer()
   endfun
 
-  const manifest = join(getline(a:firstline, a:lastline), "\n")
+  const manifest = join(getline(1, '$'), "\n")
   return vimkubectl#kube#applyString(
         \ l:manifest,
         \ vimkubectl#kube#fetchActiveNamespace(),
@@ -188,7 +199,7 @@ fun! vimkubectl#buf#edit_prepare() abort
 
   augroup vimkubectl_internal_editBufferOnSave
     autocmd! *
-    autocmd BufWriteCmd <buffer> 1,$call <SID>applyAndUpdate()
+    autocmd BufWriteCmd <buffer> call <SID>applyAndUpdate()
   augroup END
 
   let b:vimkubectl_prepared = 1
