@@ -91,13 +91,4 @@ fun! vimkubectl#util#asyncRun(cmd, callback, output = 'string', ctx = {}) abort
         \ })
 endfun
 
-fun! vimkubectl#util#asyncLoop(callback, interval = 5, ctx = {}) abort
-  call a:callback()
-  const cmd = [
-        \ 'bash', '-c',
-        \ 'while true; do sleep ' . a:interval . ' && echo 1; done'
-        \ ]
-  return vimkubectl#util#asyncRun(l:cmd, a:callback, 'string', a:ctx)
-endfun
-
 " vim: et:sw=2:sts=2:
