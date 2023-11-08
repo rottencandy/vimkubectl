@@ -25,6 +25,9 @@ endfun
 
 " Get currently active namespace
 fun! vimkubectl#kube#fetchActiveNamespace() abort
+  if v:shell_error !=# 0
+    return ''
+  endif
   return system(
         \ s:craftCmd('get sa default -o ''jsonpath={.metadata.namespace}''')
         \ )
