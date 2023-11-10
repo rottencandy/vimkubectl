@@ -61,9 +61,14 @@ endfun
 
 " :Kedit
 " Open an edit buffer with the resource manifest loaded
-fun! vimkubectl#editResourceObject(fullResource) abort
-  " TODO: make this work even with spaces instead of /
-  const resource = split(a:fullResource, '/')
+" Args could either be in `res/obj` or `res obj` format
+fun! vimkubectl#editResourceObject(args) abort
+  const fullResource = split(a:args, '\s\+')
+  if len(fullResource) > 1
+    const resource = l:fullResource
+  else
+    const resource = split(a:args, '/')
+  endif
   "TODO: provide config option for default open method
   call vimkubectl#buf#edit_load('split', l:resource[0], l:resource[1])
 endfun
