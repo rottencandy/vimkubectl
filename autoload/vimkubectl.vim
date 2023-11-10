@@ -39,9 +39,12 @@ fun! vimkubectl#switchOrShowContext(name) abort
           \ { -> vimkubectl#util#printMessage('Switched to ' . a:name) }
           \ )
   else
-    call vimkubectl#util#printMessage(
-          \ 'Active context: ' . vimkubectl#kube#fetchActiveContext()
-          \ )
+    const ctx = vimkubectl#kube#fetchActiveContext()
+    if v:shell_error !=# 0
+      call vimkubectl#util#printError('Unable to fetch active context')
+    else
+      call vimkubectl#util#printMessage('Active context: ' . l:ctx)
+    endif
   endif
 endfun
 

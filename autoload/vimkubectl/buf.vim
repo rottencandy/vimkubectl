@@ -51,11 +51,17 @@ fun! s:deleteResource() abort
     return
   endif
 
+  const ns = vimkubectl#kube#fetchActiveNamespace()
+  if v:shell_error !=# 0
+    call vimkubectl#util#printError('Unable to fetch active namespace.')
+    return
+  endif
+
   call vimkubectl#util#showMessage('Deleting...')
   call vimkubectl#kube#deleteResource(
         \ l:resource[0],
         \ l:resource[1],
-        \ vimkubectl#kube#fetchActiveNamespace(),
+        \ l:ns,
         \ { data -> vimkubectl#util#printMessage(trim(data))
         \ })
 endfun
@@ -106,7 +112,13 @@ fun! vimkubectl#buf#view_prepare() abort
   nnoremap <silent><buffer> it :call <SID>editResource('tabe')<CR>
   nnoremap <silent><buffer> dd :call <SID>deleteResource()<CR>
 
+  " TODO: remove buffer if initial population fails
   const ns = vimkubectl#kube#fetchActiveNamespace()
+  if v:shell_error !=# 0
+    call vimkubectl#util#printError('Unable to fetch active namespace.')
+    return
+  endif
+
   const resourceType = substitute(expand('%'), '^kube://', '', '')
   const ctx = {
         \ 'bufnr': bufnr(),
@@ -142,11 +154,17 @@ fun! s:refreshEditBuffer() abort
   const fullResource = substitute(expand('%'), '^kube://', '', '')
   const resource = split(l:fullResource, '/')
 
+  const ns = vimkubectl#kube#fetchActiveNamespace()
+  if v:shell_error !=# 0
+    call vimkubectl#util#printError('Unable to fetch active namespace.')
+    return
+  endif
+
   call vimkubectl#util#showMessage('Fetching manifest...')
   return vimkubectl#kube#fetchResourceManifest(
         \ l:resource[0],
         \ l:resource[1],
-        \ vimkubectl#kube#fetchActiveNamespace(),
+        \ l:ns,
         \ { data -> s:fillBuffer(bufnr(), data) }
         \ )
 endfun

@@ -1,4 +1,6 @@
 " LEGACY SYNCHRONOUS FUNCTIONS
+" Check exit code for failure after calling these functions
+" TODO: migrate these to async api
 " ----------------------------
 
 " Fetch list of all namespaces
@@ -8,7 +10,7 @@ fun! vimkubectl#kube#fetchNamespaces() abort
 endfun
 
 " Fetch list of resource types
-" Note: This uses --cached
+" Note: This uses --cached so mostly doesn't fail
 " returns string of space-separated values
 fun! vimkubectl#kube#fetchResourceTypes() abort
   return system(s:craftCmd(join(['api-resources', '--cached', '-o name'])))
@@ -25,9 +27,6 @@ endfun
 
 " Get currently active namespace
 fun! vimkubectl#kube#fetchActiveNamespace() abort
-  if v:shell_error !=# 0
-    return ''
-  endif
   return system(
         \ s:craftCmd('get sa default -o ''jsonpath={.metadata.namespace}''')
         \ )
@@ -46,12 +45,6 @@ fun! vimkubectl#kube#fetchContexts() abort
   return system(
         \ s:craftCmd('config get-contexts -o name')
         \ )
-endfun
-
-" Set active context
-fun! vimkubectl#kube#setContext(ctx, onSet) abort
-  const cmd = s:craftCmd('config use-context ' . a:ctx)
-  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onSet)
 endfun
 
 " ASYNCHRONOUS FUNCTIONS
@@ -115,6 +108,12 @@ endfun
 fun! vimkubectl#kube#deleteResource(resType, res, ns, onDel) abort
   let cmd = s:craftCmd(join(['delete', a:resType, a:res]), a:ns)
   return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onDel)
+endfun
+
+" Set active context
+fun! vimkubectl#kube#setContext(ctx, onSet) abort
+  const cmd = s:craftCmd('config use-context ' . a:ctx)
+  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onSet)
 endfun
 
 " Set active namespace for current context
