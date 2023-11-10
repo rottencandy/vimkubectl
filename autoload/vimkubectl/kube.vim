@@ -100,8 +100,8 @@ fun! vimkubectl#kube#fetchResourceManifest(
 endfun
 
 " Apply string
-fun! vimkubectl#kube#applyString(stringData, namespace, onApply) abort
-  let cmd = 'echo "$1" | ' . s:craftCmd('apply -f -', a:namespace)
+fun! vimkubectl#kube#applyString(stringData, onApply) abort
+  let cmd = 'echo "$1" | ' . s:craftCmd('apply -f -')
   " arg 2 sets $0, name of shell
   " arg 3 stringData is supplied to cmd as $1 by bash
   " See bash(1)

@@ -161,7 +161,6 @@ fun! vimkubectl#buf#applyActiveBuffer() range abort
   const manifest = join(getline(a:firstline, a:lastline), "\n")
   return vimkubectl#kube#applyString(
         \ l:manifest,
-        \ vimkubectl#kube#fetchActiveNamespace(),
         \ { result -> vimkubectl#util#showMessage(trim(result)) }
         \ )
 endfun
@@ -177,7 +176,6 @@ fun! s:applyAndUpdate() abort
   const manifest = join(getline(1, '$'), "\n")
   return vimkubectl#kube#applyString(
         \ l:manifest,
-        \ vimkubectl#kube#fetchActiveNamespace(),
         \ function('s:onApply')
         \ )
 endfun
