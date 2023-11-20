@@ -27,7 +27,7 @@ jobs:
           python-version: 3.7
 
       - name: Install dependencies
-        run: pip install vim-vint
+        run: pip install git+https://github.com/Vimjas/vint.git
 
       - name: Run vimscript linter
         run: vint .
