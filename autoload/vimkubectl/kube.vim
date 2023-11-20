@@ -89,7 +89,7 @@ fun! vimkubectl#kube#fetchResourceManifest(
         \ join(['get', a:resourceType, a:resource, '-o yaml']),
         \ a:namespace
         \ )
-  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback, 'array')
+  return vimkubectl#util#asyncExec(s:asyncCmd(l:cmd), a:callback, 'array')
 endfun
 
 " Apply string
@@ -98,7 +98,7 @@ fun! vimkubectl#kube#applyString(stringData, onApply) abort
   " arg 2 sets $0, name of shell
   " arg 3 stringData is supplied to cmd as $1 by bash
   " See bash(1)
-  return vimkubectl#util#asyncRun(
+  return vimkubectl#util#asyncExec(
         \ ['bash', '-c', l:cmd, 'apply', a:stringData],
         \ a:onApply
         \ )
@@ -107,19 +107,19 @@ endfun
 " Delete resource
 fun! vimkubectl#kube#deleteResource(resType, res, ns, onDel) abort
   let cmd = s:craftCmd(join(['delete', a:resType, a:res]), a:ns)
-  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onDel)
+  return vimkubectl#util#asyncExec(s:asyncCmd(l:cmd), a:onDel)
 endfun
 
 " Set active context
 fun! vimkubectl#kube#setContext(ctx, onSet) abort
   const cmd = s:craftCmd('config use-context ' . a:ctx)
-  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onSet)
+  return vimkubectl#util#asyncExec(s:asyncCmd(l:cmd), a:onSet)
 endfun
 
 " Set active namespace for current context
 fun! vimkubectl#kube#setNs(ns, onSet) abort
   const cmd = s:craftCmd('config set-context --current --namespace=' . a:ns)
-  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:onSet)
+  return vimkubectl#util#asyncExec(s:asyncCmd(l:cmd), a:onSet)
 endfun
 
 " Fetch list of resources of a given type
@@ -131,7 +131,7 @@ fun! vimkubectl#kube#fetchResourceList(
       \ ctx = {}
       \ ) abort
   const cmd = s:craftCmd(join(['get', a:resourceType, '-o name']), a:namespace)
-  return vimkubectl#util#asyncRun(
+  return vimkubectl#util#asyncExec(
         \ s:asyncCmd(l:cmd),
         \ a:callback,
         \ 'array',
@@ -158,7 +158,7 @@ endfun
 " Runs arbitrary command
 fun! vimkubectl#kube#runCmd(cmd, callback) abort
   const cmd = s:craftCmd(a:cmd)
-  return vimkubectl#util#asyncRun(s:asyncCmd(l:cmd), a:callback)
+  return vimkubectl#util#asyncExec(s:asyncCmd(l:cmd), a:callback)
 endfun
 
 " vim: et:sw=2:sts=2:

@@ -12,8 +12,9 @@ The following has been implemented so far:
 - Fetch and view lists of kubernetes resources
 - Edit resource manifests in YAML form
 - Apply any file or buffer to the cluster
-- Switch namespace
 - Delete resources
+- Switch namespace
+- Switch contexts
 
 Installation
 ------------

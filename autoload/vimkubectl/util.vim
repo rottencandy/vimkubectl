@@ -55,40 +55,85 @@ fun! vimkubectl#util#saveToFile(fname = '') abort
 endfun
 
 " Wrapper over async.vim https://github.com/prabirshrestha/async.vim
-" Run the `cmd` asynchronously, and call `callback` everytime STDOUT is
+" Run the `cmd` asynchronously, and call `callback` ONLY once command has
+" exited.
 " written to(Does not run when STDOUT is empty).
 " Print error message in case of non-zero return.
-" `output` defines the data type, either 'string'(default), 'array' or 'raw'
+"
+" Note on outType:
+" `outType` defines the data type, either 'string'(default), 'array' or 'raw'
 " 'string' is noop in vim, 'array' is noop in nvim
 " 'raw' will mean array for nvim and string for vim
-fun! vimkubectl#util#asyncRun(cmd, callback, output = 'string', ctx = {}) abort
-  " needed because lambdas for some reason can't use a: _default_ vars from outer scope
-  const outType = a:output
-  const ctx = a:ctx
-  const HandleOut = { jobId, data, event ->
-        \ len(data) ?
-        \   a:callback(data, l:ctx) :
-        \   0
-        \ }
+fun! vimkubectl#util#asyncExec(cmd, callback, outType = 'string', ctx = {}) abort
+  let outData = a:outType ==# 'array' ? [] : ''
+  let handlers = { 'normalize': a:outType }
 
-  const HandleErr = { jobId, data, event ->
-        \ len(data) ?
-        \   l:outType ==# 'string' ?
-        \     vimkubectl#util#printError(data) :
-        \     len(data[0]) ?
-        \       vimkubectl#util#printError(join(data, '\n'))
-        \       : 0
-        \   : 0
-        \ }
+  fun! handlers.on_stdout(jobId, data, event) closure abort
+    if !len(a:data)
+      return
+    endif
+    " Combine last line & first line to avoid s between stdout callbacks.
+    " TODO: issue still exists for 'string',
+    " substitute()ing does not seem to fix this
+    if a:outType ==# 'array'
+      if len(l:outData)
+        let l:outData[-1] .= a:data[0]
+      else
+        let l:outData = [a:data[0]]
+      endif
+      call extend(l:outData, a:data[1:])
+    else
+      let l:outData .= a:data
+    endif
+  endfun
 
-  const HandleExit = { -> 0 }
+  fun! handlers.on_stderr(jobId, data, event) closure abort
+    if len(a:data) > 0
+      if a:outType ==# 'string'
+        call vimkubectl#util#printError(a:data)
+      else
+        if len(a:data[0]) > 0
+          call vimkubectl#util#printError(join(a:data, '\n'))
+        endif
+      endif
+    endif
+  endfun
 
-  return async#job#start(a:cmd, {
-        \ 'on_stdout': l:HandleOut,
-        \ 'on_stderr': l:HandleErr,
-        \ 'on_exit': l:HandleExit,
-        \ 'normalize': a:output
-        \ })
+  fun! handlers.on_exit(jobId, data, event) closure abort
+    call a:callback(l:outData, a:ctx)
+  endfun
+
+  return async#job#start(a:cmd, handlers)
+endfun
+
+" Wrapper over async.vim https://github.com/prabirshrestha/async.vim
+" Same as vimkubectl#util#asyncExec but calls `callback` everytime STDOUT is
+" written to(Does not run when STDOUT is empty).
+fun! vimkubectl#util#asyncRun(cmd, callback, outType = 'string', ctx = {}) abort
+  let handlers = { 'normalize': a:outType }
+
+  fun! handlers.on_stdout(jobId, data, event) closure abort
+    if len(a:data)
+      call a:callback(a:data, a:ctx)
+    endif
+  endfun
+
+  fun! handlers.on_stderr(jobId, data, event) closure abort
+    if len(a:data)
+      if a:outType ==# 'string'
+        call vimkubectl#util#printError(a:data)
+      else
+        if len(a:data[0]) > 0
+          call vimkubectl#util#printError(join(a:data, '\n'))
+        endif
+      endif
+    endif
+  endfun
+
+  fun! handlers.on_exit(jobId, data, event) closure abort
+  endfun
+
+  return async#job#start(a:cmd, handlers)
 endfun
 
 " vim: et:sw=2:sts=2:
