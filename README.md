@@ -28,7 +28,7 @@ Plugin Manager  | Instructions
 [Vundle][1]    | `Plugin 'rottencandy/vimkubectl'`
 [Plug][2]      | `Plug 'rottencandy/vimkubectl'`
 [Pathogen][3]  | `git clone https://github.com/rottencandy/vimkubectl ~/.vim/bundle`
-Manual          | Copy all of the files into your `~/.vim` directory
+Vim 8+ packages  | `git clone git@github.com:rottencandy/vimkubectl.git ~/.vim/pack/vendor/start/vimkubectl && vim -u NONE -c "helptags ~/.vim/pack/vendor/start/vimkubectl/doc" -c q`
 
 Usage
 -----
