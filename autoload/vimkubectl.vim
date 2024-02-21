@@ -73,6 +73,16 @@ fun! vimkubectl#editResourceObject(args) abort
   call vimkubectl#buf#edit_load('split', l:resource[0], l:resource[1])
 endfun
 
+" :Kdoc
+" Open a buffer with the resource manual loaded
+" Args need to be in `res` or `res.spec` format. 
+" Args directly supplied to kubectl/oc explain
+fun! vimkubectl#viewResourceDoc(args) abort
+  const resourceSpec = a:args
+  call vimkubectl#buf#doc_load('split', l:resourceSpec)
+endfun
+
+" This one is determining if user is doing a Kedit or Kget
 fun! vimkubectl#hijackBuffer() abort
   const resource = substitute(expand('%'), '^kube://', '', '')
   const parsedResource = split(l:resource, '/')
@@ -81,6 +91,10 @@ fun! vimkubectl#hijackBuffer() abort
   else
     call vimkubectl#buf#edit_prepare()
   endif
+endfun
+
+fun! vimkubectl#hijackDocBuffer() abort
+  call vimkubectl#buf#doc_prepare()
 endfun
 
 fun! vimkubectl#cleanupBuffer(buf) abort
