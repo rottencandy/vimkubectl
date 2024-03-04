@@ -155,6 +155,25 @@ fun! vimkubectl#kube#fetchResourceListLoop(
         \ )
 endfun
 
+" Fetch doc
+" returns doc
+fun! vimkubectl#kube#fetchDoc(
+      \ resourceSpec,
+      \ namespace,
+      \ callback,
+      \ ctx = {}
+      \ ) abort
+  const cmd = s:craftCmd(join(['explain', a:resourceSpec ]), a:namespace)
+  return vimkubectl#util#asyncRun(
+        \ s:asyncCmd(l:cmd),
+        \ a:callback,
+        \ 'array',
+        \ a:ctx
+        \ )
+endfun
+
+
+
 " Runs arbitrary command
 fun! vimkubectl#kube#runCmd(cmd, callback) abort
   const cmd = s:craftCmd(a:cmd)

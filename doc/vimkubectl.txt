@@ -45,6 +45,10 @@ COMMANDS                                        *vimkubectl-commands*
 			applies the entire file.
 			Can be used on any open buffer.
 
+:Kdoc {resource}                                *:Kdoc*
+			Open a split that displays the manual for any Custom 
+			Resource Definition on the cluster. 
+
 :K                                              *:K*
 			Run any arbitrary `kubectl` command.
 

@@ -15,6 +15,7 @@ The following has been implemented so far:
 - Delete resources
 - Switch namespace
 - Switch contexts
+- View kubernetes resource manuals 
 
 Installation
 ------------
@@ -80,6 +81,15 @@ This plugin assumes your Kubernetes cluster is reachable and logged in with [kub
   Apply file contents. When used with a selection(), applies the selected content, else applies the entire file.
   Can be used on any open buffer.
 
+- `:Kdoc {resource}`
+
+  Retrieve documentation on a specific `{resource}`.
+
+  You can also use `<Tab>` for completion and to cycle through possible resources that are manifest on your kubernetes cluster. 
+
+   > **_NOTE:_** `:Kdoc` will retrieve manuals for any CRD on the cluster. There doesn't have to be any existing k8s objects
+   on the cluster in order to retrieve the manual. 
+   
 - `:K`
 
   Run any arbitrary `kubectl` command.
